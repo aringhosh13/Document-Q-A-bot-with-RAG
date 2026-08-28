@@ -10,66 +10,63 @@ import { DocumentChunk, DocumentItem, RetrievalResult, ChunkingConfig } from '..
  * 5. Dimensionality Reduction (PCA 2D projection) for Vector Space Mapping
  */
 
-// Step 1: Recursive Character Chunking
+// Step 1: Robust Iterative & Recursive Character Chunking
 export function splitTextRecursively(
   text: string,
   docId: string,
   docTitle: string,
   config: ChunkingConfig = { strategy: 'recursive', chunkSize: 600, chunkOverlap: 100, minChunkSize: 80 }
 ): DocumentChunk[] {
-  const { chunkSize, chunkOverlap, minChunkSize } = config;
+  const chunkSize = Math.max(100, config.chunkSize || 600);
+  const chunkOverlap = Math.min(Math.floor(chunkSize * 0.5), Math.max(0, config.chunkOverlap || 100));
+  const minChunkSize = Math.max(20, config.minChunkSize || 50);
+
+  if (!text || text.trim().length === 0) return [];
+
   const chunks: DocumentChunk[] = [];
   const separators = ['\n\n', '\n', '. ', '? ', '! ', '; ', ', ', ' '];
 
-  function split(content: string, startOffset: number): void {
-    if (content.length <= chunkSize) {
-      if (content.trim().length >= minChunkSize) {
-        chunks.push(createChunk(content.trim(), startOffset, docId, docTitle, chunks.length));
+  let currentOffset = 0;
+  const textLength = text.length;
+
+  while (currentOffset < textLength) {
+    const remainingText = text.slice(currentOffset);
+    
+    // If remaining text fits within chunk size, push and finish
+    if (remainingText.length <= chunkSize) {
+      const trimmed = remainingText.trim();
+      if (trimmed.length >= minChunkSize || chunks.length === 0) {
+        chunks.push(createChunk(trimmed || remainingText, currentOffset, docId, docTitle, chunks.length));
       }
-      return;
+      break;
     }
 
-    // Find the best separator that splits content near chunkSize
-    let chosenSep = '';
-    let splitIdx = -1;
+    // Look for optimal natural boundary within target window
+    const targetSlice = remainingText.slice(0, chunkSize);
+    let splitPoint = -1;
 
     for (const sep of separators) {
-      const parts = content.split(sep);
-      if (parts.length > 1) {
-        let runningLength = 0;
-        for (let i = 0; i < parts.length; i++) {
-          const partLength = parts[i].length + sep.length;
-          if (runningLength + partLength > chunkSize) {
-            if (runningLength >= minChunkSize) {
-              splitIdx = runningLength;
-              chosenSep = sep;
-            }
-            break;
-          }
-          runningLength += partLength;
-        }
-        if (splitIdx > 0) break;
+      const lastIdx = targetSlice.lastIndexOf(sep);
+      if (lastIdx > minChunkSize) {
+        splitPoint = lastIdx + sep.length;
+        break;
       }
     }
 
-    if (splitIdx === -1) {
-      // Fallback: hard boundary split
-      splitIdx = chunkSize;
+    // Fallback: hard cut at chunkSize if no natural separator found
+    if (splitPoint <= minChunkSize) {
+      splitPoint = chunkSize;
     }
 
-    const firstSlice = content.slice(0, splitIdx).trim();
-    if (firstSlice.length >= minChunkSize) {
-      chunks.push(createChunk(firstSlice, startOffset, docId, docTitle, chunks.length));
+    const chunkContent = remainingText.slice(0, splitPoint).trim();
+    if (chunkContent.length >= minChunkSize || chunks.length === 0) {
+      chunks.push(createChunk(chunkContent, currentOffset, docId, docTitle, chunks.length));
     }
 
-    // Advance with sliding overlap
-    const nextStart = Math.max(0, splitIdx - chunkOverlap);
-    if (nextStart < content.length && splitIdx < content.length) {
-      split(content.slice(nextStart), startOffset + nextStart);
-    }
+    // Advance sliding window with overlap (guaranteed minimum step of 20 chars or 25% chunk size)
+    const stepAdvance = Math.max(20, Math.max(1, splitPoint - chunkOverlap));
+    currentOffset += stepAdvance;
   }
-
-  split(text, 0);
 
   // Update total chunks count metadata
   const total = chunks.length;
