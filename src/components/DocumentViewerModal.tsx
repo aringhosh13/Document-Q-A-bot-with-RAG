@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DocumentItem, DocumentChunk } from '../types';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import { X, FileText, Layers, Search, BookOpen, CircleCheck as CheckCircle, Copy } from 'lucide-react';
 
 interface DocumentViewerModalProps {
@@ -97,8 +98,8 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
               </span>
             </div>
 
-            <div className="text-ink-300 leading-relaxed whitespace-pre-wrap text-xs sm:text-sm">
-              {document.content}
+            <div className="text-ink-300 leading-relaxed text-xs sm:text-sm font-sans">
+              <MarkdownRenderer content={document.content} />
             </div>
           </div>
 

@@ -6,6 +6,7 @@ import {
   DocumentChunk,
   DocumentItem,
 } from '../types';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import {
   Send,
   Sparkles,
@@ -315,13 +316,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       </button>
                     </div>
 
-                    {/* Answer Body with Highlighted Citations */}
-                    <div className="prose prose-invert prose-xs max-w-none text-ink-100 whitespace-pre-wrap leading-relaxed font-sans">
-                      {renderAnswerWithCitationBadges(
-                        msg.content,
-                        msg.retrievedChunks || [],
-                        onOpenViewerWithChunk
-                      )}
+                    {/* Answer Body with Formatted Markdown, LaTeX Math, and Interactive Citations */}
+                    <div className="text-ink-100 font-sans">
+                      <MarkdownRenderer
+                        content={msg.content}
+                        chunks={msg.retrievedChunks || []}
+                        onOpenViewer={onOpenViewerWithChunk}
+                      />
                     </div>
 
                     {/* Retrieved Sources Accordion */}

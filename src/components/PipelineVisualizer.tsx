@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import {
   FileText,
   Scissors,
@@ -31,7 +32,7 @@ export const PipelineVisualizer: React.FC<PipelineVisualizerProps> = ({
       icon: FileText,
       tag: 'Raw Data',
       description:
-        'Raw PDFs, Markdown handbooks, or plain text are ingested. Extract text streams, normalize whitespace, strip noisy formatting, and record document-level metadata (discipline, word count, timestamps).',
+        'Raw PDFs, Markdown technical documents, research publications, or plain text are ingested. Extract text streams, normalize whitespace, strip noisy formatting, and record document-level metadata (discipline, word count, timestamps).',
       mathNote: 'D = \\{d_1, d_2, \\dots, d_M\\}',
       codeSample: `// Ingestion Pipeline
 const rawText = await parsePdfFile(uploadedFile);
@@ -269,8 +270,8 @@ const response = await ai.models.generateContent({
               <div className="text-[10px] font-bold font-mono uppercase text-ink-400 tracking-wider">
                 Mathematical Formalism
               </div>
-              <div className="text-xs sm:text-sm font-mono text-accent-400 py-1 overflow-x-auto">
-                ${currentStep.mathNote}$
+              <div className="py-1 overflow-x-auto text-accent-300">
+                <MarkdownRenderer content={`$$${currentStep.mathNote}$$`} />
               </div>
             </div>
           )}

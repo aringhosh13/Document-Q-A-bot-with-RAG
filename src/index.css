@@ -126,3 +126,22 @@ input[type="range"]::-moz-range-thumb {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* KaTeX custom mathematical typography */
+.katex {
+  font-size: 1.05em;
+  text-rendering: auto;
+  color: var(--color-ink-100);
+}
+
+.katex-display {
+  margin: 0.6em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.4em 0;
+}
+
+.katex-display > .katex {
+  color: var(--color-accent-300);
+}
+

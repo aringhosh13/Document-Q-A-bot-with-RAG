@@ -6,12 +6,12 @@ export const ADMISSIONS_DEFENSE_DATA: AdmissionsTopic[] = [
     university: 'Computer Science',
     category: 'System Architecture',
     difficulty: 'Fundamental',
-    question: 'Why implement RAG (Retrieval-Augmented Generation) instead of fine-tuning an LLM on university handbooks or enterprise technical documentation?',
-    academicSignificance: 'Formulates the formal boundary between parametric memory (model weights) vs non-parametric memory (external index), addressing GPU computational cost dynamics, catastrophic forgetting, and data drift.',
-    answer: `1. **Zero Hallucination with Verifiable Grounding:** Fine-tuning modifies internal statistical weights, but models can still hallucinate non-existent prerequisites. RAG provides exact verbatim document provenance with chunk indices and character offsets.
-2. **Instant Non-Parametric Updates:** If tuition fees or curriculum modules change, RAG updates the database in milliseconds (re-indexing). Fine-tuning requires retraining, GPU compute, and risk of catastrophic forgetting.
-3. **Data Privacy & Access Control:** RAG allows document-level Access Control Lists (ACLs). A user only retrieves chunks they have permissions to view. Fine-tuned weights leak private training tokens.
-4. **Cost Efficiency:** Fine-tuning 7B-70B models requires expensive GPU clusters. RAG runs on lightweight embedding models and off-the-shelf vector stores.`,
+    question: 'Why implement RAG (Retrieval-Augmented Generation) instead of fine-tuning an LLM on specialized technical papers and dynamic documentation?',
+    academicSignificance: 'Formulates the formal boundary between parametric memory (model weights) vs non-parametric memory (external vector index), addressing computational retraining costs, catastrophic forgetting, and real-time knowledge base updates.',
+    answer: `1. **Zero Hallucination with Verifiable Grounding:** Fine-tuning modifies internal statistical weights, but models can still confabulate non-existent equations, hyperparameters, or paper citations. RAG provides exact verbatim document provenance with source chunk indices and character offsets.
+2. **Instant Non-Parametric Updates:** When research papers, API documentations, or technical specifications are updated or newly published, RAG updates the vector index in milliseconds via incremental embedding. Fine-tuning requires multi-epoch retraining, expensive GPU clusters, and carries high risk of catastrophic forgetting of pre-trained capabilities.
+3. **Data Privacy & Access Control:** RAG allows document-level Access Control Lists (ACLs) and partition filtering. A user or process only retrieves chunks they have authorization to view, whereas fine-tuned weights inherently leak private training tokens.
+4. **Cost Efficiency:** Fine-tuning 7B–70B parameter models requires dedicated multi-node GPU clusters ($\\mathcal{O}(\\text{Epochs} \\times \\text{Params} \\times \\text{Batch})$). RAG operates on lightweight embedding models and sub-linear ANN vector indexes ($\\mathcal{O}(\\text{IndexSize} \\times d)$).`,
     keyTakeaways: [
       'Parametric (weights) vs Non-Parametric (external vector index)',
       'Catastrophic forgetting avoidance',
@@ -25,21 +25,21 @@ export const ADMISSIONS_DEFENSE_DATA: AdmissionsTopic[] = [
     university: 'AI & Data Science',
     category: 'Vector Math & Retrieval',
     difficulty: 'Intermediate',
-    question: 'What is the mathematical and semantic trade-off between small chunks (100 chars) vs large chunks (2000 chars)? How does chunk overlap mitigate boundary clipping?',
-    academicSignificance: 'Analyzes information retrieval trade-offs: signal-to-noise ratio vs context dilution, and transformer embedding pooling effects across sliding windows.',
+    question: 'What is the mathematical and semantic trade-off between small chunks (100–300 chars) vs large chunks (1500–3000 chars)? How does sliding window overlap mitigate boundary clipping?',
+    academicSignificance: 'Analyzes information retrieval trade-offs: semantic signal-to-noise ratio vs context dilution, and transformer embedding pooling effects across sliding text windows.',
     answer: `• **Small Chunks (100–300 chars):**
-  - *Pros:* High semantic specificity; vector embedding is highly dense and focused; minimal irrelevant noise.
-  - *Cons:* Destroys cross-sentence discourse context; misses multi-sentence co-references ("the aforementioned scholarship").
+  - *Pros:* High semantic specificity; dense vector embedding is tightly focused on atomic concepts; minimizes irrelevant noise.
+  - *Cons:* Destroys cross-sentence discourse context; misses multi-sentence co-references (e.g., *"the aforementioned scaling factor $\\frac{1}{\\sqrt{d_k}}$"* or *"the covariance matrix $\\Sigma$ defined above"*).
 • **Large Chunks (1500–3000 chars):**
-  - *Pros:* Complete semantic context and reasoning chains preserved.
-  - *Cons:* "Embedding Averaging Effect" (mean pooling over 512 tokens dilutes specific keywords); wastes LLM context window; higher cost.
-• **Role of Chunk Overlap (e.g. 15-20%):**
-  - Sliding overlap prevents critical sentences or equations from being bisected across chunk boundaries.
-  - Ensures continuous n-gram and semantic coherence for the bi-encoder embedding model.`,
+  - *Pros:* Complete mathematical derivations, multi-step proofs, and broad context are preserved together.
+  - *Cons:* "Embedding Averaging Effect" (mean pooling over 512+ tokens dilutes specific technical terms and variables); exhausts LLM context window tokens; increases generation latency.
+• **Role of Sliding Window Overlap (e.g., 15–20%):**
+  - Prevents critical formulas, function declarations, and definitions from being bisected across adjacent chunk boundaries.
+  - Preserves continuous n-gram overlap and semantic coherence for transformer bi-encoder representations.`,
     keyTakeaways: [
       'Goldilocks zone: 400-800 characters with 15-20% sliding window overlap',
       'Recursive character splitting prioritizing double newlines (paragraphs) over single newlines, then words',
-      'Prevents loss of named entities at boundary splits',
+      'Prevents loss of mathematical terms and named entities at boundary splits',
     ],
     formula: '\\text{Overlap Ratio} = \\frac{\\text{Chunk Overlap}}{\\text{Chunk Size}} \\in [0.10, 0.25]',
   },
@@ -48,17 +48,17 @@ export const ADMISSIONS_DEFENSE_DATA: AdmissionsTopic[] = [
     university: 'Information Systems',
     category: 'Vector Math & Retrieval',
     difficulty: 'Advanced',
-    question: 'Why is pure Dense Vector Search (Cosine Similarity) insufficient for real-world enterprise/academic documents, and how does Hybrid Search (Dense + BM25) solve this?',
-    academicSignificance: 'Addresses structural limitations of bi-encoder dense embeddings when processing exact alphanumeric codes, course identifiers (CS3244), GPA cutoffs, and out-of-vocabulary acronyms.',
-    answer: `Dense vector embeddings map semantic concepts into continuous vector space (e.g., "AI syllabus" is close to "machine learning curriculum").
-However, dense bi-encoders struggle with:
-1. Exact keyword identifiers, e.g., course codes ("CS2103T", "SC4001"), GPA cutoffs ("3.85"), or student ID numbers.
-2. Out-of-vocabulary technical jargon or acronyms (e.g., "IGP", "NLP", "CUDA").
+    question: 'Why is pure Dense Vector Search (Cosine Similarity) insufficient for technical literature, and how does Hybrid Search (Dense + BM25) solve this?',
+    academicSignificance: 'Addresses structural limitations of bi-encoder dense embeddings when processing exact alphanumeric identifiers, mathematical symbols, hyperparameters (\\beta_1, \\beta_2), and out-of-vocabulary acronyms.',
+    answer: `Dense bi-encoders map semantic concepts into continuous vector space (e.g., mapping "gradient optimization" close to "learning rate schedule").
+However, pure dense vector retrieval struggles with:
+1. **Exact Alphanumeric & Code Identifiers:** Parameter names (\`d_model=512\`, \`\\beta_1=0.9\`), model acronyms (\`IVF-PQ\`, \`HNSW\`, \`DPR\`, \`FAISS\`), or specific paper citations.
+2. **Mathematical Variable Notation:** Distinguishing similar mathematical symbols (e.g., $QW_i^Q$ vs $KW_i^K$, or $\\mathcal{L}_{\\text{CE}}$ vs $\\mathcal{L}_{\\text{MSE}}$) where cosine embeddings may project all loss formulas closely together.
 
 **The Hybrid Search Solution (Dense + Sparse Fusion):**
-We combine BM25 (TF-IDF keyword frequency with document length penalization) and Dense Vector Cosine Similarity using Reciprocal Rank Fusion (RRF) or linear interpolation:
-$$\\text{Score}_{\\text{Hybrid}} = \\alpha \\cdot \\text{Score}_{\\text{Dense}} + (1 - \\alpha) \\cdot \\text{Score}_{\\text{BM25}}$$
-where $\\alpha \\approx 0.65 - 0.75$.`,
+We combine sparse lexical matching (BM25 term frequency with document length penalization) and dense semantic embeddings using **Reciprocal Rank Fusion (RRF)**:
+$$\\text{RRF}(d) = \\sum_{m \\in \\{\\text{Dense}, \\text{BM25}\\}} \\frac{1}{k + r_m(d)}$$
+where $k \\approx 60$ ensures robust rank aggregation without needing to calibrate disparate score distributions.`,
     keyTakeaways: [
       'Dense search excels at conceptual/synonym matching',
       'Sparse BM25 excels at exact keyword and alphanumeric code matching',
@@ -71,12 +71,12 @@ where $\\alpha \\approx 0.65 - 0.75$.`,
     university: 'Systems & Design',
     category: 'Hallucination & Guardrails',
     difficulty: 'Intermediate',
-    question: 'How does your RAG system prevent hallucination and defend against prompt injection or out-of-context fabrication?',
+    question: 'How does your RAG system prevent hallucination and enforce verifiable provenance down to exact source chunks?',
     academicSignificance: 'Establishes robust system boundary controls, verifiable provenance mapping, negative constraint prompts, and deterministic generation parameters.',
-    answer: `1. **Strict Zero-Knowledge System Prompt Grounding:** The LLM is instructed: *"If the retrieved excerpts do not explicitly contain the answer, state that information is insufficient. Do not extrapolate."*
-2. **Mandatory In-line Citation Grounding:** The model must generate citations [Source X, Chunk #Y] for every factual claim. If a claim lacks an attribution tag, a post-processor flags it as ungrounded.
-3. **Automated Verification Loop (Ragas Faithfulness):** A secondary verification pass decomposes generated answers into atomic factual claims and checks if each claim is entailed by the retrieved chunks.
-4. **Low Generation Temperature:** Set temperature to $0.0 - 0.2$ to minimize stochastic divergence.`,
+    answer: `1. **Strict Zero-Knowledge System Prompt Grounding:** The LLM is instructed: *"If the retrieved excerpts do not explicitly contain the necessary information, state clearly that the provided documents do not contain the answer. Do not extrapolate or fabricate equations."*
+2. **Mandatory In-line Citation Attribution:** The model must generate citations \`[Source X, Chunk #Y]\` for every factual claim. If a claim lacks an attribution tag, a post-processor flags it as ungrounded.
+3. **Automated Verification Loop (Ragas Faithfulness):** A secondary verification pass decomposes generated answers into atomic factual claims and verifies whether each claim is logically entailed by the retrieved chunks.
+4. **Deterministic Generation Parameters:** Temperature set to $0.0 - 0.2$ to minimize stochastic divergence on mathematical derivations and factual statements.`,
     keyTakeaways: [
       'Negative constraint prompting ("Admit when context is missing")',
       'Structured citation brackets with character offset mapping',
@@ -115,7 +115,7 @@ Thus, normalized dot product, cosine similarity, and L2 distance become mathemat
     university: 'AI & Data Science',
     category: 'Engineering & Scalability',
     difficulty: 'System Design',
-    question: 'How do you scale RAG from 1,000 documents to 10,000,000 documents without linear scan latency $\\mathcal{O}(N \\times d)$?',
+    question: 'How do you scale RAG from 1,000 document passages to 10,000,000 passages without linear scan latency $\\mathcal{O}(N \\times d)$?',
     academicSignificance: 'Explores algorithmic indexing for large-scale information retrieval: Approximate Nearest Neighbor (ANN), HNSW graph indexing, and Vector Quantization (IVF-PQ).',
     answer: `A naive exact k-NN linear scan takes $\\mathcal{O}(N \\times d)$ time, which becomes unacceptable at 10M vectors ($>500\\text{ms}$).
 To achieve sub-10ms latency, we use **Approximate Nearest Neighbor (ANN)** indexing algorithms:

@@ -292,7 +292,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
               rows={5}
               value={pasteContent}
               onChange={(e) => setPasteContent(e.target.value)}
-              placeholder="Paste article, handbook, or research notes..."
+              placeholder="Paste research paper text, documentation, technical specifications, or markdown notes..."
               className="w-full bg-ink-850 border border-ink-800 rounded-lg p-3 text-xs text-ink-100 placeholder-ink-600 focus:outline-none focus:border-accent-500/50 transition-colors font-mono"
             />
           </div>

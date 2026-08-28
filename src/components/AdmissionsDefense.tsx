@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ADMISSIONS_DEFENSE_DATA } from '../data/admissionsData';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import {
   GraduationCap,
   Sparkles,
@@ -255,15 +256,15 @@ Demonstrates software engineering rigor, linear algebra concepts (unit hypersphe
                           <div className="text-xs font-bold text-ink-300 uppercase tracking-wider">
                             Theoretical & Architectural Formulation:
                           </div>
-                          <div className="text-xs sm:text-sm text-ink-200 whitespace-pre-wrap leading-relaxed space-y-2 bg-ink-900 p-4 rounded-xl border border-ink-800 font-sans">
-                            {topic.answer}
+                          <div className="bg-ink-900 p-4 rounded-xl border border-ink-800 font-sans">
+                            <MarkdownRenderer content={topic.answer} />
                           </div>
                         </div>
 
                         {/* Formula if applicable */}
                         {topic.formula && (
-                          <div className="p-3 bg-ink-900 border border-ink-800 rounded-lg text-xs font-mono text-accent-400 overflow-x-auto">
-                            ${topic.formula}$
+                          <div className="p-3 bg-black border border-ink-800 rounded-lg overflow-x-auto">
+                            <MarkdownRenderer content={`$$${topic.formula}$$`} />
                           </div>
                         )}
 
