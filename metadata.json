@@ -1,0 +1,6 @@
+{
+  "name": "Document Q&A Bot with RAG from Scratch",
+  "description": "An interactive Document Q&A Bot powered by Retrieval-Augmented Generation (RAG) built from scratch with vector indexing, semantic search, interactive pipeline visualizer, and academic admissions interview defense kit.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
