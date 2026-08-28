@@ -97,5 +97,5 @@ export interface AdmissionsTopic {
   keyTakeaways: string[];
   formula?: string;
   codeSnippet?: string;
-  interviewerPerspective: string;
+  academicSignificance: string;
 }

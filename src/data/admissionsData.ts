@@ -7,7 +7,7 @@ export const ADMISSIONS_DEFENSE_DATA: AdmissionsTopic[] = [
     category: 'System Architecture',
     difficulty: 'Fundamental',
     question: 'Why implement RAG (Retrieval-Augmented Generation) instead of fine-tuning an LLM on university handbooks or enterprise technical documentation?',
-    interviewerPerspective: 'Computer Science faculty want to verify whether you understand the boundary between parametric memory (model weights) vs non-parametric memory (external index), GPU cost dynamics, and data drift.',
+    academicSignificance: 'Formulates the formal boundary between parametric memory (model weights) vs non-parametric memory (external index), addressing GPU computational cost dynamics, catastrophic forgetting, and data drift.',
     answer: `1. **Zero Hallucination with Verifiable Grounding:** Fine-tuning modifies internal statistical weights, but models can still hallucinate non-existent prerequisites. RAG provides exact verbatim document provenance with chunk indices and character offsets.
 2. **Instant Non-Parametric Updates:** If tuition fees or curriculum modules change, RAG updates the database in milliseconds (re-indexing). Fine-tuning requires retraining, GPU compute, and risk of catastrophic forgetting.
 3. **Data Privacy & Access Control:** RAG allows document-level Access Control Lists (ACLs). A user only retrieves chunks they have permissions to view. Fine-tuned weights leak private training tokens.
@@ -26,7 +26,7 @@ export const ADMISSIONS_DEFENSE_DATA: AdmissionsTopic[] = [
     category: 'Vector Math & Retrieval',
     difficulty: 'Intermediate',
     question: 'What is the mathematical and semantic trade-off between small chunks (100 chars) vs large chunks (2000 chars)? How does chunk overlap mitigate boundary clipping?',
-    interviewerPerspective: 'AI and Data Science researchers test your practical information retrieval instincts: signal-to-noise ratio vs context dilution, and transformer embedding pooling effects.',
+    academicSignificance: 'Analyzes information retrieval trade-offs: signal-to-noise ratio vs context dilution, and transformer embedding pooling effects across sliding windows.',
     answer: `• **Small Chunks (100–300 chars):**
   - *Pros:* High semantic specificity; vector embedding is highly dense and focused; minimal irrelevant noise.
   - *Cons:* Destroys cross-sentence discourse context; misses multi-sentence co-references ("the aforementioned scholarship").
@@ -49,7 +49,7 @@ export const ADMISSIONS_DEFENSE_DATA: AdmissionsTopic[] = [
     category: 'Vector Math & Retrieval',
     difficulty: 'Advanced',
     question: 'Why is pure Dense Vector Search (Cosine Similarity) insufficient for real-world enterprise/academic documents, and how does Hybrid Search (Dense + BM25) solve this?',
-    interviewerPerspective: 'Information Systems faculty assess your enterprise engineering pragmatism: dealing with exact course codes (CS3244), acronyms, GPA numbers, and proper nouns that embeddings often smooth away.',
+    academicSignificance: 'Addresses structural limitations of bi-encoder dense embeddings when processing exact alphanumeric codes, course identifiers (CS3244), GPA cutoffs, and out-of-vocabulary acronyms.',
     answer: `Dense vector embeddings map semantic concepts into continuous vector space (e.g., "AI syllabus" is close to "machine learning curriculum").
 However, dense bi-encoders struggle with:
 1. Exact keyword identifiers, e.g., course codes ("CS2103T", "SC4001"), GPA cutoffs ("3.85"), or student ID numbers.
@@ -72,7 +72,7 @@ where $\\alpha \\approx 0.65 - 0.75$.`,
     category: 'Hallucination & Guardrails',
     difficulty: 'Intermediate',
     question: 'How does your RAG system prevent hallucination and defend against prompt injection or out-of-context fabrication?',
-    interviewerPerspective: 'Systems Engineering evaluators look for robust system boundary controls, trust mechanisms, and fail-safe design principles.',
+    academicSignificance: 'Establishes robust system boundary controls, verifiable provenance mapping, negative constraint prompts, and deterministic generation parameters.',
     answer: `1. **Strict Zero-Knowledge System Prompt Grounding:** The LLM is instructed: *"If the retrieved excerpts do not explicitly contain the answer, state that information is insufficient. Do not extrapolate."*
 2. **Mandatory In-line Citation Grounding:** The model must generate citations [Source X, Chunk #Y] for every factual claim. If a claim lacks an attribution tag, a post-processor flags it as ungrounded.
 3. **Automated Verification Loop (Ragas Faithfulness):** A secondary verification pass decomposes generated answers into atomic factual claims and checks if each claim is entailed by the retrieved chunks.
@@ -90,7 +90,7 @@ where $\\alpha \\approx 0.65 - 0.75$.`,
     category: 'Vector Math & Retrieval',
     difficulty: 'Advanced',
     question: 'Explain the mathematical formulation of Cosine Similarity vs Euclidean Distance (L2) vs Dot Product. Why is Cosine Similarity preferred in text embeddings?',
-    interviewerPerspective: 'Professors look for foundational linear algebra mastery: norms, dot products, high-dimensional geometry, and unit hyperspheres.',
+    academicSignificance: 'Provides the foundational linear algebra derivation of inner products, L2 norms, high-dimensional angles, and the geometry of the unit hypersphere S^(d-1).',
     answer: `Given two $d$-dimensional embedding vectors $\\mathbf{u}$ and $\\mathbf{v}$:
 1. **Dot Product:** $\\mathbf{u} \\cdot \\mathbf{v} = \\sum_{i=1}^d u_i v_i = \\|\\mathbf{u}\\| \\|\\mathbf{v}\\| \\cos(\\theta)$
 2. **Cosine Similarity:** $\\cos(\\theta) = \\frac{\\mathbf{u} \\cdot \\mathbf{v}}{\\|\\mathbf{u}\\|_2 \\|\\mathbf{v}\\|_2}$
@@ -116,7 +116,7 @@ Thus, normalized dot product, cosine similarity, and L2 distance become mathemat
     category: 'Engineering & Scalability',
     difficulty: 'System Design',
     question: 'How do you scale RAG from 1,000 documents to 10,000,000 documents without linear scan latency $\\mathcal{O}(N \\times d)$?',
-    interviewerPerspective: 'Tests your computer systems and algorithms knowledge: Approximate Nearest Neighbor (ANN), HNSW graph indexing, Vector Quantization (IVF-PQ).',
+    academicSignificance: 'Explores algorithmic indexing for large-scale information retrieval: Approximate Nearest Neighbor (ANN), HNSW graph indexing, and Vector Quantization (IVF-PQ).',
     answer: `A naive exact k-NN linear scan takes $\\mathcal{O}(N \\times d)$ time, which becomes unacceptable at 10M vectors ($>500\\text{ms}$).
 To achieve sub-10ms latency, we use **Approximate Nearest Neighbor (ANN)** indexing algorithms:
 1. **HNSW (Hierarchical Navigable Small World):** Multi-layer graph architecture inspired by skip lists. Top layers have long-range links for fast coarse navigation; bottom layer contains dense local clusters. Query complexity: $\\mathcal{O}(\\log N)$.
@@ -134,7 +134,7 @@ To achieve sub-10ms latency, we use **Approximate Nearest Neighbor (ANN)** index
     category: 'System Architecture',
     difficulty: 'Intermediate',
     question: 'How do you scientifically evaluate a RAG system without relying on subjective human "vibe checks"? What is the RAG Triad / RAGAS framework?',
-    interviewerPerspective: 'Faculty look for disciplined experimental methodology, quantitative metrics, and benchmark rigor.',
+    academicSignificance: 'Introduces quantitative benchmarks and empirical methodologies for evaluating component-level and end-to-end information retrieval accuracy.',
     answer: `The **RAG Triad** evaluates the three critical failure modes of RAG independently:
 1. **Context Relevance (Retriever Quality):** Is the retrieved context actually relevant to the user query? Measures noise ratio.
    $$\\text{Context Relevance} = \\frac{|\\text{Relevant Retrieved Sentences}|}{|\\text{Total Retrieved Sentences}|}$$
@@ -154,7 +154,7 @@ To achieve sub-10ms latency, we use **Approximate Nearest Neighbor (ANN)** index
     category: 'System Architecture',
     difficulty: 'Advanced',
     question: 'What is the "Lost in the Middle" phenomenon (Liu et al. 2023) in LLM context windows, and how does your RAG re-ranker mitigate it?',
-    interviewerPerspective: 'Tests familiarity with cutting-edge NLP findings regarding LLM attention head bias.',
+    academicSignificance: 'Explores empirical findings on Transformer self-attention positional degradation across multi-thousand token contexts and mitigation via re-ranking.',
     answer: `LLMs with self-attention mechanisms exhibit a **U-shaped performance curve** regarding information retrieval in long contexts:
 • Models perform best when key relevant facts are placed at the **very beginning** (primacy bias) or at the **very end** (recency bias) of the input context prompt.
 • When relevant information is stuffed in the **middle 40-70%** of a large context prompt, retrieval accuracy plummets by up to 30-50%.

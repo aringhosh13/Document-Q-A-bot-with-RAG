@@ -103,15 +103,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const totalWords = documents.reduce((acc, d) => acc + d.wordCount, 0);
   const totalChunks = documents.reduce((acc, d) => acc + d.chunks.length, 0);
 
-  const institutionColor = (inst?: string) => {
-    switch (inst) {
-      case 'AI & Deep Learning': return 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5';
-      case 'Machine Learning': return 'text-amber-400 border-amber-500/20 bg-amber-500/5';
-      case 'Data Science': return 'text-blue-400 border-blue-500/20 bg-blue-500/5';
-      case 'NLP & Embeddings': return 'text-cyan-400 border-cyan-500/20 bg-cyan-500/5';
-      case 'RAG Research': return 'text-purple-400 border-purple-500/20 bg-purple-500/5';
-      default: return 'text-teal-400 border-teal-500/20 bg-teal-500/5';
-    }
+  const institutionColor = (_inst?: string) => {
+    return 'text-accent-400 border-accent-500/20 bg-accent-950/40';
   };
 
   return (

@@ -1,34 +1,26 @@
 import React, { useState } from 'react';
 import { ADMISSIONS_DEFENSE_DATA } from '../data/admissionsData';
-import { AdmissionsTopic } from '../types';
 import {
   GraduationCap,
-  Award,
-  BookOpen,
-  HelpCircle,
-  CheckCircle2,
+  Sparkles,
   ChevronDown,
   ChevronUp,
-  Sparkles,
-  School,
-  FileCheck,
-  TrendingUp,
   Copy,
   Check,
-  Zap,
+  CheckCircle2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const AdmissionsDefense: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'interview' | 'pitch' | 'ragas'>('interview');
-  const [selectedUni, setSelectedUni] = useState<string>('ALL');
+  const [activeTab, setActiveTab] = useState<'overview' | 'foundations' | 'ragas'>('overview');
+  const [selectedDiscipline, setSelectedDiscipline] = useState<string>('ALL');
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(
-    ADMISSIONS_DEFENSE_DATA[0].id
+    ADMISSIONS_DEFENSE_DATA[0]?.id || null
   );
   const [copiedPitch, setCopiedPitch] = useState(false);
 
   const filteredTopics = ADMISSIONS_DEFENSE_DATA.filter(
-    (t) => selectedUni === 'ALL' || t.university === selectedUni || t.university === 'General'
+    (t) => selectedDiscipline === 'ALL' || t.university === selectedDiscipline || t.university === 'General'
   );
 
   const triggerConfetti = () => {
@@ -39,25 +31,25 @@ export const AdmissionsDefense: React.FC = () => {
     });
   };
 
-  const elevatorPitch = `Project Title: "Algorithmic Retrieval-Augmented Generation (RAG) Engine with Hybrid Vector Retrieval & Grounded Provenance"
+  const projectAbstract = `Project Title: "Algorithmic Retrieval-Augmented Generation (RAG) Engine with Hybrid Vector Retrieval & Grounded Provenance"
 
-AI Collaboration & Engineering Statement:
-This project was engineered collaboratively leveraging modern AI coding assistance (e.g. LLM-assisted scaffolding, iterative algorithm refinement, and verification), with a strong hands-on focus on understanding, designing, and validating core information retrieval and linear algebra mechanisms.
+Engineering & Research Statement:
+This pipeline is engineered from foundational principles to understand, design, and validate core information retrieval and linear algebra mechanisms in real time.
 
 Problem Statement:
-Standard LLMs suffer from severe parametric hallucinations, outdated training cutoffs, and lack of verifiable citations when answering domain-specific queries (e.g. institutional policies, technical specifications, and complex research literature).
+Standard LLMs suffer from parametric hallucinations, outdated training cutoffs, and lack of verifiable citations when answering domain-specific queries across dense literature and technical document sets.
 
-AI-Assisted Architectural Solution & Engineering Breakdown:
-1. Implemented a custom recursive character chunking engine with sliding window overlap (15-20%) to preserve semantic discourse boundaries without sentence bisecting.
-2. Built a hybrid dual-retrieval pipeline combining Dense Vector Embeddings (Cosine Similarity on unit hypersphere S^(d-1)) and Sparse Inverted Index (BM25 term frequencies) with Reciprocal Rank Fusion to accurately resolve both high-level semantic intents and exact keyword/acronym matches.
+Architectural Solution & Engineering Breakdown:
+1. Implemented a recursive character chunking engine with sliding window overlap (15-20%) to preserve semantic discourse boundaries without sentence bisecting.
+2. Built a hybrid dual-retrieval pipeline combining Dense Vector Embeddings (Cosine Similarity on unit hypersphere S^(d-1)) and Sparse Inverted Index (BM25 term frequencies) to accurately resolve both high-level semantic intents and exact keyword/acronym matches.
 3. Designed strict negative-constraint grounding system instructions and automated provenance tracking, mapping generated facts to exact source chunk character offsets.
 4. Integrated the RAGAS evaluation framework to benchmark Faithfulness, Answer Relevance, and Context Precision.
 
-Technical Significance & Key Learnings:
-Demonstrates foundational software engineering, linear algebra concepts (unit hyperspheres, vector norms, cosine angles), hybrid information retrieval algorithms (Dense + BM25), and disciplined AI safety engineering beyond blackbox API calls.`;
+Technical Significance:
+Demonstrates software engineering rigor, linear algebra concepts (unit hyperspheres, vector norms, cosine angles), hybrid information retrieval algorithms (Dense + BM25), and disciplined AI safety engineering beyond blackbox API calls.`;
 
   const handleCopyPitch = () => {
-    navigator.clipboard.writeText(elevatorPitch);
+    navigator.clipboard.writeText(projectAbstract);
     setCopiedPitch(true);
     triggerConfetti();
     setTimeout(() => setCopiedPitch(false), 2500);
@@ -66,103 +58,151 @@ Demonstrates foundational software engineering, linear algebra concepts (unit hy
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5 sm:p-6 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+      <div className="bg-ink-900 rounded-xl border border-ink-800 p-5 sm:p-6 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-ink-800">
           <div>
             <div className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-cyan-400" />
-              <h2 className="text-base sm:text-lg font-bold text-white">
-                Technical Architecture & Portfolio Defense Kit
+              <GraduationCap className="w-5 h-5 text-accent-400" />
+              <h2 className="text-base sm:text-lg font-bold text-white font-sans">
+                Academic Project Defense & System Architecture
               </h2>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Curated for software engineering, information retrieval, vector mathematics, and systems design technical interviews
+            <p className="text-xs text-ink-400 mt-0.5">
+              Theoretical foundations, algorithmic design, mathematical formalisms, and RAGAS benchmark evaluation
             </p>
           </div>
 
           {/* Sub-tabs */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+          <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-ink-800 text-xs">
             <button
-              onClick={() => setActiveTab('interview')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
-                activeTab === 'interview'
-                  ? 'bg-cyan-600 text-white shadow'
-                  : 'text-slate-400 hover:text-white'
+              onClick={() => setActiveTab('overview')}
+              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+                activeTab === 'overview'
+                  ? 'bg-accent-600 text-white shadow'
+                  : 'text-ink-400 hover:text-white'
               }`}
             >
-              Interview Q&A (12+)
+              Project Overview & Abstract
             </button>
             <button
-              onClick={() => setActiveTab('pitch')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
-                activeTab === 'pitch'
-                  ? 'bg-cyan-600 text-white shadow'
-                  : 'text-slate-400 hover:text-white'
+              onClick={() => setActiveTab('foundations')}
+              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+                activeTab === 'foundations'
+                  ? 'bg-accent-600 text-white shadow'
+                  : 'text-ink-400 hover:text-white'
               }`}
             >
-              Portfolio Pitch Deck
+              Theoretical Foundations
             </button>
             <button
               onClick={() => setActiveTab('ragas')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
                 activeTab === 'ragas'
-                  ? 'bg-cyan-600 text-white shadow'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-accent-600 text-white shadow'
+                  : 'text-ink-400 hover:text-white'
               }`}
             >
-              RAGAS Metrics
+              RAGAS Benchmarks
             </button>
           </div>
         </div>
 
-        {/* Tab 1: Interview Q&A */}
-        {activeTab === 'interview' && (
+        {/* Tab 1: Project Overview & Abstract */}
+        {activeTab === 'overview' && (
+          <div className="mt-4 space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white">
+                  Academic Project Abstract & Engineering Specification
+                </h3>
+                <p className="text-xs text-ink-400">
+                  Comprehensive summary of system design, algorithmic motivations, and information retrieval mechanics
+                </p>
+              </div>
+
+              <button
+                onClick={handleCopyPitch}
+                className="px-3.5 py-1.5 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 shadow"
+              >
+                {copiedPitch ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedPitch ? 'Copied to Clipboard!' : 'Copy Abstract'}</span>
+              </button>
+            </div>
+
+            <div className="bg-black p-5 rounded-xl border border-ink-800 font-mono text-xs text-ink-300 whitespace-pre-wrap leading-relaxed">
+              {projectAbstract}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              <div className="p-3.5 bg-black rounded-xl border border-ink-800 space-y-1">
+                <div className="text-accent-400 font-bold">1. Problem Formulation</div>
+                <p className="text-ink-400 leading-relaxed text-[11px]">
+                  Mitigates parametric memory limits and hallucinations in LLMs without prohibitive GPU model retraining costs.
+                </p>
+              </div>
+
+              <div className="p-3.5 bg-black rounded-xl border border-ink-800 space-y-1">
+                <div className="text-accent-400 font-bold">2. Mathematical Rigor</div>
+                <p className="text-ink-400 leading-relaxed text-[11px]">
+                  Rooted in linear algebra: L2 unit hypersphere normalization, inner product angles, and PCA projection.
+                </p>
+              </div>
+
+              <div className="p-3.5 bg-black rounded-xl border border-ink-800 space-y-1">
+                <div className="text-accent-400 font-bold">3. Hybrid Retrieval</div>
+                <p className="text-ink-400 leading-relaxed text-[11px]">
+                  Dual retrieval fusion: dense vector embeddings with sparse BM25 term weighting to capture intent and exact identifiers.
+                </p>
+              </div>
+
+              <div className="p-3.5 bg-black rounded-xl border border-ink-800 space-y-1">
+                <div className="text-accent-400 font-bold">4. Verifiable Provenance</div>
+                <p className="text-ink-400 leading-relaxed text-[11px]">
+                  Strict negative constraints with verifiable in-line citation tags linked directly to source character spans.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Theoretical Foundations & Architecture Analysis */}
+        {activeTab === 'foundations' && (
           <div className="mt-4 space-y-4">
-            {/* Category Filter */}
+            {/* Discipline Filter */}
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="text-slate-400 mr-1">Filter by Discipline:</span>
+                <span className="text-ink-400 mr-1">Filter by Discipline:</span>
                 {['ALL', 'Computer Science', 'AI & Data Science', 'Information Systems', 'Systems & Design'].map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setSelectedUni(cat)}
+                    onClick={() => setSelectedDiscipline(cat)}
                     className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                      selectedUni === cat
-                        ? 'bg-cyan-600 text-white'
-                        : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                      selectedDiscipline === cat
+                        ? 'bg-accent-600 text-white'
+                        : 'bg-black text-ink-400 hover:text-white border border-ink-800'
                     }`}
                   >
                     {cat}
                   </button>
                 ))}
               </div>
-              <span className="text-xs text-slate-500 font-mono">
-                {filteredTopics.length} Curated Questions
+              <span className="text-xs text-ink-500 font-mono">
+                {filteredTopics.length} Core Analysis Modules
               </span>
             </div>
 
-            {/* Questions Accordion */}
+            {/* Topics Accordion */}
             <div className="space-y-3">
               {filteredTopics.map((topic) => {
                 const isExpanded = expandedTopicId === topic.id;
-                const uniBadgeColor =
-                  topic.university === 'Computer Science'
-                    ? 'bg-orange-950 text-orange-400 border-orange-800'
-                    : topic.university === 'AI & Data Science'
-                    ? 'bg-red-950 text-red-400 border-red-800'
-                    : topic.university === 'Information Systems'
-                    ? 'bg-blue-950 text-blue-400 border-blue-800'
-                    : topic.university === 'Systems & Design'
-                    ? 'bg-rose-950 text-rose-400 border-rose-800'
-                    : 'bg-cyan-950 text-cyan-400 border-cyan-800';
 
                 return (
                   <div
                     key={topic.id}
                     className={`rounded-xl border transition-all ${
                       isExpanded
-                        ? 'bg-slate-950 border-cyan-500/80 shadow-lg'
-                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                        ? 'bg-black border-accent-500/80 shadow-lg'
+                        : 'bg-black/60 border-ink-800 hover:border-ink-700'
                     }`}
                   >
                     <button
@@ -173,15 +213,13 @@ Demonstrates foundational software engineering, linear algebra concepts (unit hy
                     >
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded border ${uniBadgeColor}`}
-                          >
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded border bg-accent-950 text-accent-400 border-accent-800">
                             {topic.university}
                           </span>
-                          <span className="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                          <span className="text-[10px] font-mono text-ink-400 bg-ink-900 px-2 py-0.5 rounded border border-ink-800">
                             {topic.category}
                           </span>
-                          <span className="text-[10px] font-medium text-amber-400 bg-amber-950/50 px-2 py-0.5 rounded border border-amber-800/60">
+                          <span className="text-[10px] font-medium text-amber-300 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">
                             {topic.difficulty}
                           </span>
                         </div>
@@ -190,9 +228,9 @@ Demonstrates foundational software engineering, linear algebra concepts (unit hy
                         </h4>
                       </div>
 
-                      <div className="p-1 rounded bg-slate-900 text-slate-400 mt-1">
+                      <div className="p-1 rounded bg-ink-900 text-ink-400 mt-1">
                         {isExpanded ? (
-                          <ChevronUp className="w-4 h-4 text-cyan-400" />
+                          <ChevronUp className="w-4 h-4 text-accent-400" />
                         ) : (
                           <ChevronDown className="w-4 h-4" />
                         )}
@@ -200,44 +238,44 @@ Demonstrates foundational software engineering, linear algebra concepts (unit hy
                     </button>
 
                     {isExpanded && (
-                      <div className="p-4 sm:p-5 pt-0 border-t border-slate-800/80 space-y-4 animate-in fade-in duration-200">
-                        {/* Interviewer perspective insight box */}
-                        <div className="p-3 rounded-lg bg-cyan-950/40 border border-cyan-800/60 text-xs text-cyan-200 flex items-start gap-2">
-                          <Sparkles className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                      <div className="p-4 sm:p-5 pt-0 border-t border-ink-800 space-y-4 animate-fade-in">
+                        {/* Research Focus & Key Architectural Insight */}
+                        <div className="p-3 rounded-lg bg-accent-950/40 border border-accent-800/50 text-xs text-accent-200 flex items-start gap-2">
+                          <Sparkles className="w-4 h-4 text-accent-400 flex-shrink-0 mt-0.5" />
                           <div>
-                            <strong className="text-cyan-300 font-semibold">
-                              What Interviewers & Professors Look For:
+                            <strong className="text-accent-300 font-semibold">
+                              Academic Significance & Core Principles:
                             </strong>{' '}
-                            {topic.interviewerPerspective}
+                            {topic.academicSignificance}
                           </div>
                         </div>
 
-                        {/* Model Answer */}
+                        {/* Model Technical Analysis */}
                         <div className="space-y-2">
-                          <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                            Model Technical Defense Answer:
+                          <div className="text-xs font-bold text-ink-300 uppercase tracking-wider">
+                            Theoretical & Architectural Formulation:
                           </div>
-                          <div className="text-xs sm:text-sm text-slate-200 whitespace-pre-wrap leading-relaxed space-y-2 bg-slate-900 p-4 rounded-xl border border-slate-800 font-sans">
+                          <div className="text-xs sm:text-sm text-ink-200 whitespace-pre-wrap leading-relaxed space-y-2 bg-ink-900 p-4 rounded-xl border border-ink-800 font-sans">
                             {topic.answer}
                           </div>
                         </div>
 
                         {/* Formula if applicable */}
                         {topic.formula && (
-                          <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-cyan-400 overflow-x-auto">
+                          <div className="p-3 bg-ink-900 border border-ink-800 rounded-lg text-xs font-mono text-accent-400 overflow-x-auto">
                             ${topic.formula}$
                           </div>
                         )}
 
-                        {/* Key takeaways bullet tags */}
+                        {/* Key concepts bullet tags */}
                         <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                          <span className="text-[11px] font-bold text-slate-400 mr-1">
-                            Key Buzzwords:
+                          <span className="text-[11px] font-bold text-ink-400 mr-1">
+                            Key Theoretical Takeaways:
                           </span>
                           {topic.keyTakeaways.map((k, idx) => (
                             <span
                               key={idx}
-                              className="text-[10px] font-semibold bg-slate-900 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700"
+                              className="text-[10px] font-semibold bg-ink-900 text-ink-300 px-2 py-0.5 rounded-full border border-ink-800"
                             >
                               {k}
                             </span>
@@ -252,77 +290,6 @@ Demonstrates foundational software engineering, linear algebra concepts (unit hy
           </div>
         )}
 
-        {/* Tab 2: Portfolio Pitch Deck */}
-        {activeTab === 'pitch' && (
-          <div className="mt-4 space-y-5">
-            {/* AI Collaboration Disclosure Banner */}
-            <div className="p-4 rounded-xl bg-cyan-950/40 border border-cyan-800/80 flex items-start gap-3">
-              <Sparkles className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-cyan-300">
-                  Transparent AI Collaboration Disclosure
-                </h4>
-                <p className="text-[11px] text-slate-300 leading-relaxed mt-0.5">
-                  This project transparently acknowledges the use of AI engineering assistance (Gemini / LLM development workflows) for code scaffolding, modular refinement, and test harnesses, paired with active human design of the mathematical formulations, vector embeddings, chunking algorithms, and evaluation benchmarks.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-white">
-                  3-Minute Technical Project Pitch & Architecture Overview
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Honest, transparent project description highlighting AI-assisted engineering and core algorithmic knowledge
-                </p>
-              </div>
-
-              <button
-                onClick={handleCopyPitch}
-                className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 shadow"
-              >
-                {copiedPitch ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedPitch ? 'Copied to Clipboard!' : 'Copy Pitch'}</span>
-              </button>
-            </div>
-
-            <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">
-              {elevatorPitch}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                <div className="text-cyan-400 font-bold">1. Motivation</div>
-                <p className="text-slate-400 leading-relaxed text-[11px]">
-                  Solves the critical parametric memory limits of LLMs without multi-million dollar model retraining.
-                </p>
-              </div>
-
-              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                <div className="text-indigo-400 font-bold">2. Math Foundations</div>
-                <p className="text-slate-400 leading-relaxed text-[11px]">
-                  Built on Linear Algebra: Unit hypersphere L2 normalization, dot products, and PCA dimensional reduction.
-                </p>
-              </div>
-
-              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                <div className="text-emerald-400 font-bold">3. Hybrid Retrieval</div>
-                <p className="text-slate-400 leading-relaxed text-[11px]">
-                  Combines Dense Cosine Vectors with Sparse BM25 to catch both semantic intent and exact alphanumeric codes.
-                </p>
-              </div>
-
-              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                <div className="text-rose-400 font-bold">4. Trust & Citations</div>
-                <p className="text-slate-400 leading-relaxed text-[11px]">
-                  Strict zero-hallucination negative constraints with direct in-line provenance tags down to character slices.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Tab 3: RAGAS Benchmark Suite */}
         {activeTab === 'ragas' && (
           <div className="mt-4 space-y-4">
@@ -330,47 +297,47 @@ Demonstrates foundational software engineering, linear algebra concepts (unit hy
               <h3 className="text-sm font-bold text-white">
                 RAGAS (Retrieval Augmented Generation Assessment) Framework
               </h3>
-              <p className="text-xs text-slate-400">
-                How to objectively measure and benchmark RAG accuracy without subjective human bias
+              <p className="text-xs text-ink-400">
+                Objective evaluation metrics and benchmark methodologies for quantifying RAG accuracy
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+              <div className="p-4 rounded-xl bg-black border border-ink-800 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-emerald-400">1. Faithfulness</span>
-                  <span className="text-[10px] font-mono text-slate-500">Generator Quality</span>
+                  <span className="font-bold text-xs text-accent-400">1. Faithfulness</span>
+                  <span className="text-[10px] font-mono text-ink-500">Generator Quality</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-ink-300 leading-relaxed">
                   Measures whether every single atomic claim in the generated answer is mathematically entailed by the retrieved context chunks.
                 </p>
-                <div className="text-[11px] font-mono text-slate-400 bg-slate-900 p-2 rounded">
+                <div className="text-[11px] font-mono text-ink-400 bg-ink-900 p-2 rounded border border-ink-800">
                   Score = (Supported Claims) / (Total Claims)
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+              <div className="p-4 rounded-xl bg-black border border-ink-800 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-cyan-400">2. Answer Relevance</span>
-                  <span className="text-[10px] font-mono text-slate-500">End-to-End Metric</span>
+                  <span className="font-bold text-xs text-accent-400">2. Answer Relevance</span>
+                  <span className="text-[10px] font-mono text-ink-500">End-to-End Metric</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-ink-300 leading-relaxed">
                   Measures whether the synthesized response directly answers the user query without rambling or introducing extraneous topics.
                 </p>
-                <div className="text-[11px] font-mono text-slate-400 bg-slate-900 p-2 rounded">
+                <div className="text-[11px] font-mono text-ink-400 bg-ink-900 p-2 rounded border border-ink-800">
                   Score = cos(Embed(Answer), Embed(Query))
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+              <div className="p-4 rounded-xl bg-black border border-ink-800 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-indigo-400">3. Context Precision</span>
-                  <span className="text-[10px] font-mono text-slate-500">Retriever Quality</span>
+                  <span className="font-bold text-xs text-accent-400">3. Context Precision</span>
+                  <span className="text-[10px] font-mono text-ink-500">Retriever Quality</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-ink-300 leading-relaxed">
                   Measures whether the relevant ground-truth chunks were ranked at the very top (Rank #1, #2) rather than buried at the bottom.
                 </p>
-                <div className="text-[11px] font-mono text-slate-400 bg-slate-900 p-2 rounded">
+                <div className="text-[11px] font-mono text-ink-400 bg-ink-900 p-2 rounded border border-ink-800">
                   Score = Mean Average Precision (mAP)
                 </div>
               </div>
