@@ -6,24 +6,7 @@ import {
   DocumentChunk,
   DocumentItem,
 } from '../types';
-import {
-  Send,
-  Sparkles,
-  Bot,
-  User,
-  Sliders,
-  ChevronDown,
-  ChevronUp,
-  FileSearch,
-  ExternalLink,
-  ShieldCheck,
-  Zap,
-  Code,
-  Layers,
-  Copy,
-  Check,
-  RefreshCw,
-} from 'lucide-react';
+import { Send, Sparkles, Bot, User, FileSliders as Sliders, ChevronDown, ChevronUp, FileSearch, ExternalLink, ShieldCheck, Zap, Code, Layers, Copy, Check, RefreshCw } from 'lucide-react';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -53,31 +36,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const sampleQueries = [
-    {
-      uni: 'CS',
-      label: 'CS Admissions & Prereqs',
-      query: 'What are the exact high school subject prerequisites and indicative grade profiles for Computer Science?',
-    },
-    {
-      uni: 'AI',
-      label: 'AI Curriculum & GPU Labs',
-      query: 'What AI and Deep Learning modules and GPU research facilities are available in the AI & Data Science degree?',
-    },
-    {
-      uni: 'IS',
-      label: 'Enterprise Cloud Tracks',
-      query: 'How does the Information Systems curriculum integrate cloud enterprise architectures with consulting projects?',
-    },
-    {
-      uni: 'Systems',
-      label: 'Systems Design Capstone',
-      query: 'What is the multi-disciplinary Systems Design and Engineering capstone project and how is it structured?',
-    },
-    {
-      uni: 'RAG',
-      label: 'Lewis et al. RAG Math',
-      query: 'Explain the mathematical difference between RAG-Sequence and RAG-Token models according to Lewis et al. 2020.',
-    },
+    'What are the high school subject prerequisites for Computer Science?',
+    'What Deep Learning modules and GPU labs are in the AI & Data Science degree?',
+    'How does Information Systems integrate cloud architecture with consulting?',
+    'Explain the difference between RAG-Sequence and RAG-Token (Lewis et al. 2020).',
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -94,42 +56,43 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-[740px] bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+    <div className="flex flex-col h-[740px] bg-ink-900 rounded-xl border border-ink-800 overflow-hidden">
       {/* Header bar */}
-      <div className="px-5 py-3.5 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
+      <div className="px-4 py-3 bg-ink-850 border-b border-ink-800 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-            <FileSearch className="w-4 h-4" />
+          <div className="w-7 h-7 rounded-lg bg-accent-500/10 border border-accent-500/20 flex items-center justify-center">
+            <FileSearch className="w-3.5 h-3.5 text-accent-400" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white">
-              Grounded Document Q&A Agent
+            <h3 className="text-sm font-semibold text-ink-50">
+              Document Q&A
             </h3>
-            <p className="text-[11px] text-slate-400">
-              Retrieval-Augmented Generation with strict provenance & citation verification
+            <p className="text-[11px] text-ink-500">
+              Grounded retrieval with citations
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => setShowConfig(!showConfig)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all ${
               showConfig
-                ? 'bg-cyan-950 text-cyan-400 border-cyan-700'
-                : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800'
+                ? 'bg-accent-500/10 text-accent-300 border-accent-500/30'
+                : 'bg-ink-800 text-ink-300 border-ink-700 hover:bg-ink-700'
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span>RAG Tuning (Top-K: {retrievalConfig.topK})</span>
+            <span className="hidden sm:inline">Tune</span>
+            <span className="font-mono text-[10px] text-ink-500">K={retrievalConfig.topK}</span>
             {showConfig ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
           {messages.length > 0 && (
             <button
               onClick={onClearChat}
-              className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg text-xs"
-              title="Clear Chat History"
+              className="p-1.5 text-ink-500 hover:text-ink-200 hover:bg-ink-800 rounded-md transition-colors"
+              title="Clear chat"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
@@ -139,12 +102,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       {/* RAG Parameter Tuning Drawer */}
       {showConfig && (
-        <div className="p-4 bg-slate-950 border-b border-slate-800 text-xs space-y-3 animate-in fade-in duration-200">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 bg-ink-850 border-b border-ink-800 text-xs space-y-4 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
-              <div className="flex justify-between text-slate-300 mb-1">
-                <span>Top-K Retrieved Chunks</span>
-                <span className="font-semibold text-cyan-400">{retrievalConfig.topK}</span>
+              <div className="flex justify-between text-ink-300 mb-1.5">
+                <span>Top-K Chunks</span>
+                <span className="font-mono font-semibold text-accent-400">{retrievalConfig.topK}</span>
               </div>
               <input
                 type="range"
@@ -157,18 +120,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     topK: parseInt(e.target.value, 10),
                   }))
                 }
-                className="w-full accent-cyan-500"
+                className="w-full"
               />
-              <span className="text-[10px] text-slate-500">
-                Number of highest-cosine chunks injected into prompt.
-              </span>
             </div>
 
             <div>
-              <div className="flex justify-between text-slate-300 mb-1">
-                <span>Hybrid Balance (Dense vs BM25)</span>
-                <span className="font-semibold text-indigo-400">
-                  {(retrievalConfig.hybridAlpha * 100).toFixed(0)}% Vector / {((1 - retrievalConfig.hybridAlpha) * 100).toFixed(0)}% BM25
+              <div className="flex justify-between text-ink-300 mb-1.5">
+                <span>Dense / BM25</span>
+                <span className="font-mono font-semibold text-ink-200">
+                  {(retrievalConfig.hybridAlpha * 100).toFixed(0)}/{((1 - retrievalConfig.hybridAlpha) * 100).toFixed(0)}
                 </span>
               </div>
               <input
@@ -183,17 +143,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     hybridAlpha: parseFloat(e.target.value),
                   }))
                 }
-                className="w-full accent-indigo-500"
+                className="w-full"
               />
-              <span className="text-[10px] text-slate-500">
-                1.0 = Pure Semantic Embeddings, 0.0 = Pure Keyword BM25.
-              </span>
             </div>
 
             <div>
-              <div className="flex justify-between text-slate-300 mb-1">
-                <span>Min Cosine Threshold</span>
-                <span className="font-semibold text-emerald-400">
+              <div className="flex justify-between text-ink-300 mb-1.5">
+                <span>Min Threshold</span>
+                <span className="font-mono font-semibold text-ink-200">
                   {(retrievalConfig.similarityThreshold * 100).toFixed(0)}%
                 </span>
               </div>
@@ -209,11 +166,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     similarityThreshold: parseFloat(e.target.value),
                   }))
                 }
-                className="w-full accent-emerald-500"
+                className="w-full"
               />
-              <span className="text-[10px] text-slate-500">
-                Filters out noisy irrelevant chunks below threshold.
-              </span>
             </div>
           </div>
         </div>
@@ -223,83 +177,75 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto py-8">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-3 shadow-lg shadow-cyan-500/10">
-              <Sparkles className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-xl bg-accent-500/10 border border-accent-500/20 flex items-center justify-center mb-3">
+              <Sparkles className="w-5 h-5 text-accent-400" />
             </div>
-            <h4 className="text-sm font-semibold text-slate-200">
-              Test Document Retrieval & Synthesis
+            <h4 className="text-sm font-semibold text-ink-100">
+              Ask about admissions, curriculum, or RAG research
             </h4>
-            <p className="text-xs text-slate-400 mt-1 mb-5 leading-relaxed">
-              Ask any question about academic admissions, curriculum details, or technical RAG research papers.
+            <p className="text-xs text-ink-500 mt-1 mb-5">
+              Answers are grounded in the indexed documents with inline citations.
             </p>
 
-            {/* Quick Sample Queries */}
-            <div className="w-full space-y-2">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-                Suggested Admissions & Research Prompts
+            <div className="w-full space-y-1.5">
+              <span className="text-[10px] font-semibold text-ink-600 uppercase tracking-wider block mb-1.5">
+                Try a question
               </span>
-              <div className="grid grid-cols-1 gap-1.5 text-left">
-                {sampleQueries.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => onSendMessage(item.query)}
-                    className="p-2.5 rounded-xl bg-slate-950/70 hover:bg-slate-950 border border-slate-800 hover:border-cyan-500/50 text-xs text-slate-300 hover:text-white transition-all flex items-start gap-2.5 group"
-                  >
-                    <span className="px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 text-[10px] font-bold">
-                      {item.uni}
-                    </span>
-                    <span className="flex-1 group-hover:translate-x-0.5 transition-transform">
-                      {item.query}
-                    </span>
-                  </button>
-                ))}
-              </div>
+              {sampleQueries.map((query, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => onSendMessage(query)}
+                  className="w-full p-2.5 rounded-lg bg-ink-850 hover:bg-ink-800 border border-ink-800 hover:border-accent-500/30 text-left text-xs text-ink-300 hover:text-ink-100 transition-all group"
+                >
+                  <span className="flex items-start gap-2">
+                    <span className="text-accent-500 font-mono text-[10px] mt-0.5">{String(idx + 1).padStart(2, '0')}</span>
+                    <span className="flex-1 group-hover:translate-x-0.5 transition-transform">{query}</span>
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
         ) : (
           messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex gap-3 ${
-                msg.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
+              className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-700/60 flex-shrink-0 flex items-center justify-center text-cyan-400 mt-0.5 shadow-sm">
-                  <Bot className="w-4 h-4" />
+                <div className="w-7 h-7 rounded-lg bg-accent-500/10 border border-accent-500/20 flex-shrink-0 flex items-center justify-center mt-0.5">
+                  <Bot className="w-3.5 h-3.5 text-accent-400" />
                 </div>
               )}
 
               <div
-                className={`max-w-[88%] sm:max-w-[82%] rounded-2xl p-4 text-xs leading-relaxed space-y-3 ${
+                className={`max-w-[88%] sm:max-w-[82%] rounded-xl p-3.5 text-xs leading-relaxed space-y-3 ${
                   msg.role === 'user'
-                    ? 'bg-cyan-600 text-white rounded-br-none shadow-md'
-                    : 'bg-slate-950/90 text-slate-200 border border-slate-800 rounded-bl-none shadow-md'
+                    ? 'bg-accent-600 text-white rounded-br-sm'
+                    : 'bg-ink-850 text-ink-200 border border-ink-800 rounded-bl-sm'
                 }`}
               >
-                {/* User Message */}
                 {msg.role === 'user' ? (
                   <p className="whitespace-pre-wrap text-sm font-medium">{msg.content}</p>
                 ) : (
                   <>
-                    {/* Assistant Metadata & Grounding Badges */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800/80 text-[11px]">
+                    {/* Metadata bar */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-ink-800 text-[11px]">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60">
+                        <span className="inline-flex items-center gap-1 text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
                           <ShieldCheck className="w-3 h-3" />
-                          {msg.ragMetrics?.overallVerdict || 'Grounded in Sources'}
+                          {msg.ragMetrics?.overallVerdict || 'Grounded'}
                         </span>
                         {msg.latencyMs && (
-                          <span className="text-slate-400 flex items-center gap-1">
+                          <span className="text-ink-500 flex items-center gap-1 font-mono">
                             <Zap className="w-3 h-3 text-amber-400" />
-                            {msg.latencyMs}ms total
+                            {msg.latencyMs}ms
                           </span>
                         )}
                       </div>
 
                       <button
                         onClick={() => handleCopy(msg.content, msg.id)}
-                        className="text-slate-400 hover:text-slate-200 flex items-center gap-1 text-[11px]"
+                        className="text-ink-500 hover:text-ink-200 flex items-center gap-1 text-[11px] transition-colors"
                       >
                         {copiedId === msg.id ? (
                           <>
@@ -315,8 +261,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       </button>
                     </div>
 
-                    {/* Answer Body with Highlighted Citations */}
-                    <div className="prose prose-invert prose-xs max-w-none text-slate-200 whitespace-pre-wrap leading-relaxed font-sans">
+                    {/* Answer body */}
+                    <div className="text-ink-200 whitespace-pre-wrap leading-relaxed">
                       {renderAnswerWithCitationBadges(
                         msg.content,
                         msg.retrievedChunks || [],
@@ -324,22 +270,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       )}
                     </div>
 
-                    {/* Retrieved Sources Accordion */}
+                    {/* Sources accordion */}
                     {msg.retrievedChunks && msg.retrievedChunks.length > 0 && (
-                      <div className="pt-2 border-t border-slate-800/80">
+                      <div className="pt-2 border-t border-ink-800">
                         <button
                           onClick={() =>
                             setExpandedSourcesMsgId(
                               expandedSourcesMsgId === msg.id ? null : msg.id
                             )
                           }
-                          className="w-full flex items-center justify-between text-[11px] font-medium text-cyan-400 hover:text-cyan-300 py-1"
+                          className="w-full flex items-center justify-between text-[11px] font-medium text-accent-400 hover:text-accent-300 py-1 transition-colors"
                         >
                           <span className="flex items-center gap-1.5">
                             <Layers className="w-3.5 h-3.5" />
-                            <span>
-                              Retrieved Context ({msg.retrievedChunks.length} Top-K Chunks)
-                            </span>
+                            <span>Retrieved context ({msg.retrievedChunks.length})</span>
                           </span>
                           {expandedSourcesMsgId === msg.id ? (
                             <ChevronUp className="w-3.5 h-3.5" />
@@ -349,39 +293,39 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         </button>
 
                         {expandedSourcesMsgId === msg.id && (
-                          <div className="mt-2 space-y-2 animate-in fade-in duration-150">
+                          <div className="mt-2 space-y-2 animate-fade-in">
                             {msg.retrievedChunks.map((res, i) => (
                               <div
                                 key={i}
-                                className="bg-slate-900 border border-slate-800 rounded-xl p-3 space-y-1.5"
+                                className="bg-ink-900 border border-ink-800 rounded-lg p-2.5 space-y-1.5"
                               >
                                 <div className="flex items-center justify-between text-[10px]">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 font-bold border border-cyan-800">
-                                      Source {i + 1}
+                                    <span className="px-1.5 py-0.5 rounded bg-accent-500/10 text-accent-400 font-mono font-bold border border-accent-500/20">
+                                      S{i + 1}
                                     </span>
-                                    <span className="font-semibold text-slate-300 truncate max-w-[200px]">
+                                    <span className="font-medium text-ink-300 truncate max-w-[200px]">
                                       {res.chunk.docTitle}
                                     </span>
-                                    <span className="text-slate-500 font-mono">
-                                      #Chunk {res.chunk.chunkIndex + 1}
+                                    <span className="text-ink-600 font-mono">
+                                      #{res.chunk.chunkIndex + 1}
                                     </span>
                                   </div>
 
                                   <div className="flex items-center gap-2">
-                                    <span className="text-emerald-400 font-semibold font-mono">
-                                      {(res.similarity * 100).toFixed(1)}% Cosine
+                                    <span className="text-emerald-400 font-mono font-medium">
+                                      {(res.similarity * 100).toFixed(1)}%
                                     </span>
                                     <button
                                       onClick={() => onOpenViewerWithChunk(res.chunk)}
-                                      className="text-cyan-400 hover:text-cyan-200 underline text-[10px] flex items-center gap-0.5"
+                                      className="text-accent-400 hover:text-accent-300 transition-colors"
                                     >
-                                      Inspect <ExternalLink className="w-2.5 h-2.5" />
+                                      <ExternalLink className="w-3 h-3" />
                                     </button>
                                   </div>
                                 </div>
 
-                                <p className="text-[11px] text-slate-400 font-mono bg-slate-950 p-2 rounded-lg leading-relaxed line-clamp-3">
+                                <p className="text-[11px] text-ink-400 font-mono bg-ink-950 p-2 rounded leading-relaxed line-clamp-3">
                                   {res.chunk.text}
                                 </p>
                               </div>
@@ -391,7 +335,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       </div>
                     )}
 
-                    {/* Raw Grounded Prompt Inspector */}
+                    {/* Prompt inspector */}
                     {msg.rawPrompt && (
                       <div className="pt-1">
                         <button
@@ -400,18 +344,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                               expandedPromptMsgId === msg.id ? null : msg.id
                             )
                           }
-                          className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 font-mono"
+                          className="flex items-center gap-1 text-[10px] text-ink-600 hover:text-ink-400 font-mono transition-colors"
                         >
                           <Code className="w-3 h-3" />
                           <span>
                             {expandedPromptMsgId === msg.id
-                              ? 'Hide Injected Prompt Payload'
-                              : 'Inspect Injected System & Augmented Prompt'}
+                              ? 'Hide prompt payload'
+                              : 'Inspect prompt'}
                           </span>
                         </button>
 
                         {expandedPromptMsgId === msg.id && (
-                          <div className="mt-2 p-3 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-mono text-slate-300 whitespace-pre-wrap max-h-48 overflow-y-auto">
+                          <div className="mt-2 p-2.5 bg-ink-950 border border-ink-800 rounded-md text-[10px] font-mono text-ink-400 whitespace-pre-wrap max-h-48 overflow-y-auto">
                             {msg.rawPrompt}
                           </div>
                         )}
@@ -422,8 +366,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               </div>
 
               {msg.role === 'user' && (
-                <div className="w-8 h-8 rounded-lg bg-cyan-700 border border-cyan-500 flex-shrink-0 flex items-center justify-center text-white mt-0.5 shadow-sm">
-                  <User className="w-4 h-4" />
+                <div className="w-7 h-7 rounded-lg bg-accent-600 border border-accent-500 flex-shrink-0 flex items-center justify-center mt-0.5">
+                  <User className="w-3.5 h-3.5 text-white" />
                 </div>
               )}
             </div>
@@ -431,17 +375,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         )}
 
         {isLoading && (
-          <div className="flex gap-3 items-start animate-pulse">
-            <div className="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-800 flex items-center justify-center text-cyan-400">
-              <Bot className="w-4 h-4" />
+          <div className="flex gap-3 items-start">
+            <div className="w-7 h-7 rounded-lg bg-accent-500/10 border border-accent-500/20 flex items-center justify-center">
+              <Bot className="w-3.5 h-3.5 text-accent-400" />
             </div>
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl rounded-bl-none p-4 text-xs text-slate-400 space-y-2">
-              <div className="flex items-center gap-2 text-cyan-400 font-medium">
-                <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-                <span>Computing dense vector embeddings & querying cosine index...</span>
+            <div className="bg-ink-850 border border-ink-800 rounded-xl rounded-bl-sm p-3.5 text-xs space-y-2">
+              <div className="flex items-center gap-2 text-accent-400 font-medium">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent-400 animate-ping" />
+                <span>Computing embeddings and querying index...</span>
               </div>
-              <p className="text-[11px] text-slate-500">
-                Retrieving Top-{retrievalConfig.topK} relevant passages and synthesizing strictly grounded response.
+              <p className="text-[11px] text-ink-500">
+                Retrieving Top-{retrievalConfig.topK} passages and synthesizing grounded response.
               </p>
             </div>
           </div>
@@ -449,7 +393,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
 
       {/* Input Form */}
-      <div className="p-3 sm:p-4 bg-slate-950/80 border-t border-slate-800">
+      <div className="p-3 sm:p-4 bg-ink-850 border-t border-ink-800">
         <form onSubmit={handleSubmit} className="relative flex items-center">
           <input
             type="text"
@@ -458,36 +402,34 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             disabled={isLoading || documents.length === 0}
             placeholder={
               documents.length === 0
-                ? 'Upload or index documents above first...'
-                : 'Ask anything about curriculum, admissions criteria, or RAG research...'
+                ? 'Index documents above first...'
+                : 'Ask about curriculum, admissions, or RAG research...'
             }
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-4 pr-24 py-3 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 disabled:opacity-50"
+            className="w-full bg-ink-900 border border-ink-800 rounded-lg pl-3.5 pr-20 py-2.5 text-sm text-ink-100 placeholder-ink-600 focus:outline-none focus:border-accent-500/50 focus:ring-1 focus:ring-accent-500/30 transition-all disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={isLoading || !inputQuery.trim() || documents.length === 0}
-            className="absolute right-1.5 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-medium text-xs rounded-lg transition-all flex items-center gap-1.5 shadow"
+            className="absolute right-1.5 px-3.5 py-1.5 bg-accent-600 hover:bg-accent-500 disabled:bg-ink-800 disabled:text-ink-600 text-white font-medium text-xs rounded-md transition-all flex items-center gap-1.5"
           >
-            <span>Query</span>
-            <Send className="w-3.5 h-3.5" />
+            <span>Send</span>
+            <Send className="w-3 h-3" />
           </button>
         </form>
-        <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2 px-1">
-          <span>Press Enter to query with vector search &middot; Real-time Cosine Ranking</span>
-          <span>Zero Hallucination Guardrail Active</span>
+        <div className="flex items-center justify-between text-[10px] text-ink-600 mt-1.5 px-1">
+          <span>Enter to query · Cosine ranking</span>
+          <span>Zero hallucination guardrail</span>
         </div>
       </div>
     </div>
   );
 };
 
-// Helper: Highlight citation tags in the answer text and make them interactive
 function renderAnswerWithCitationBadges(
   text: string,
   chunks: RetrievalResult[],
   onOpenViewer: (chunk: DocumentChunk) => void
 ) {
-  // Split on [Source X] or [Chunk #Y]
   const regex = /(\[(?:Source\s*\d+|Chunk\s*#?\d+|Doc:[^\]]+)\])/gi;
   const parts = text.split(regex);
 
@@ -501,8 +443,8 @@ function renderAnswerWithCitationBadges(
         <button
           key={index}
           onClick={() => targetChunk && onOpenViewer(targetChunk)}
-          className="inline-flex items-center gap-0.5 mx-0.5 px-1.5 py-0.2 rounded bg-cyan-950 hover:bg-cyan-900 border border-cyan-700/80 text-cyan-300 font-mono text-[10px] font-bold transition-colors cursor-pointer"
-          title={`Click to view Source #${sourceNum} in document viewer`}
+          className="inline-flex items-center gap-0.5 mx-0.5 px-1.5 py-0.5 rounded bg-accent-500/10 hover:bg-accent-500/20 border border-accent-500/30 text-accent-300 font-mono text-[10px] font-medium transition-colors cursor-pointer"
+          title={`View Source #${sourceNum}`}
         >
           {part}
         </button>
