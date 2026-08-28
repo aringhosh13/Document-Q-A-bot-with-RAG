@@ -44,11 +44,12 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
   const nodeColor = (chunk: DocumentChunk, isRetrieved: boolean) => {
     if (isRetrieved) return 'bg-accent-400 ring-4 ring-accent-500/30 shadow-lg shadow-accent-500/30 scale-125';
     const title = chunk.docTitle.toLowerCase();
-    if (title.includes('computer science')) return 'bg-orange-500';
-    if (title.includes('data science') || title.includes('artificial intelligence')) return 'bg-red-500';
-    if (title.includes('information systems')) return 'bg-blue-500';
-    if (title.includes('design') || title.includes('systems')) return 'bg-rose-500';
-    return 'bg-emerald-500';
+    if (title.includes('deep learning') || title.includes('transformer') || title.includes('attention')) return 'bg-emerald-500';
+    if (title.includes('machine learning') || title.includes('optimization') || title.includes('loss') || title.includes('adamw')) return 'bg-amber-500';
+    if (title.includes('data science') || title.includes('statistical') || title.includes('pca') || title.includes('svd')) return 'bg-blue-500';
+    if (title.includes('embeddings') || title.includes('vector search') || title.includes('hnsw') || title.includes('faiss')) return 'bg-cyan-500';
+    if (title.includes('retrieval-augmented') || title.includes('rag') || title.includes('lewis')) return 'bg-purple-500';
+    return 'bg-teal-500';
   };
 
   return (
@@ -175,19 +176,19 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
           <span className="w-2.5 h-2.5 rounded-full bg-accent-400 ring-2 ring-accent-500/40" /> Retrieved
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-orange-500" /> CS
+          <span className="w-2 h-2 rounded-full bg-emerald-500" /> Deep Learning
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-red-500" /> AI
+          <span className="w-2 h-2 rounded-full bg-amber-500" /> Machine Learning
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-blue-500" /> IS
+          <span className="w-2 h-2 rounded-full bg-blue-500" /> Data Science
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-rose-500" /> Systems
+          <span className="w-2 h-2 rounded-full bg-cyan-500" /> NLP & Embeddings
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" /> Research
+          <span className="w-2 h-2 rounded-full bg-purple-500" /> RAG Research
         </span>
         <span className="ml-auto text-[11px] font-mono text-accent-400 bg-accent-500/10 px-2 py-0.5 rounded border border-accent-500/20">
           cos(θ) = (u·v) / (‖u‖·‖v‖)

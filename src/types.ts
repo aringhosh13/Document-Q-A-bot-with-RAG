@@ -19,7 +19,7 @@ export interface DocumentItem {
   id: string;
   title: string;
   category: DocumentCategory;
-  institution?: 'Computer Science' | 'AI & Data Science' | 'Information Systems' | 'Systems & Design' | 'General AI' | string;
+  institution?: 'AI & Deep Learning' | 'Machine Learning' | 'Data Science' | 'NLP & Embeddings' | 'RAG Research' | string;
   summary: string;
   content: string;
   charCount: number;

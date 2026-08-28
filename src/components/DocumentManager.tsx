@@ -35,7 +35,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const [pasteTitle, setPasteTitle] = useState('');
   const [pasteContent, setPasteContent] = useState('');
   const [pasteCategory, setPasteCategory] = useState<'academic' | 'research' | 'user_upload'>('user_upload');
-  const [institution, setInstitution] = useState<'Computer Science' | 'AI & Data Science' | 'Information Systems' | 'Systems & Design' | 'General AI'>('Computer Science');
+  const [institution, setInstitution] = useState<'AI & Deep Learning' | 'Machine Learning' | 'Data Science' | 'NLP & Embeddings' | 'RAG Research'>('AI & Deep Learning');
   const [isDragging, setIsDragging] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +54,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
           id: `doc-${Date.now()}-${i}`,
           title: file.name,
           category: 'user_upload',
-          institution: 'General AI',
+          institution: 'AI & Deep Learning',
           summary: `Uploaded ${file.type || 'text'} · ${wordCount} words · ${pageCount} pages`,
           content: text,
           fileType: file.name.endsWith('.pdf') ? 'pdf' : 'txt',
@@ -84,7 +84,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       id: `doc-${Date.now()}`,
       title: pasteTitle.trim(),
       category: pasteCategory,
-      institution: pasteCategory === 'academic' ? institution : 'General AI',
+      institution: institution,
       summary: `User document · ${wordCount} words`,
       content: pasteContent.trim(),
       fileType: 'txt',
@@ -105,11 +105,12 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
   const institutionColor = (inst?: string) => {
     switch (inst) {
-      case 'Computer Science': return 'text-orange-400 border-orange-500/20 bg-orange-500/5';
-      case 'AI & Data Science': return 'text-red-400 border-red-500/20 bg-red-500/5';
-      case 'Information Systems': return 'text-blue-400 border-blue-500/20 bg-blue-500/5';
-      case 'Systems & Design': return 'text-rose-400 border-rose-500/20 bg-rose-500/5';
-      default: return 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5';
+      case 'AI & Deep Learning': return 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5';
+      case 'Machine Learning': return 'text-amber-400 border-amber-500/20 bg-amber-500/5';
+      case 'Data Science': return 'text-blue-400 border-blue-500/20 bg-blue-500/5';
+      case 'NLP & Embeddings': return 'text-cyan-400 border-cyan-500/20 bg-cyan-500/5';
+      case 'RAG Research': return 'text-purple-400 border-purple-500/20 bg-purple-500/5';
+      default: return 'text-teal-400 border-teal-500/20 bg-teal-500/5';
     }
   };
 
@@ -282,11 +283,11 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                 onChange={(e) => setInstitution(e.target.value as any)}
                 className="w-full bg-ink-850 border border-ink-800 rounded-lg px-3 py-2 text-xs text-ink-100 focus:outline-none focus:border-accent-500/50 transition-colors"
               >
-                <option value="Computer Science">Computer Science</option>
-                <option value="AI & Data Science">AI & Data Science</option>
-                <option value="Information Systems">Information Systems</option>
-                <option value="Systems & Design">Systems & Design</option>
-                <option value="General AI">Technical Research</option>
+                <option value="AI & Deep Learning">AI & Deep Learning</option>
+                <option value="Machine Learning">Machine Learning</option>
+                <option value="Data Science">Data Science</option>
+                <option value="NLP & Embeddings">NLP & Embeddings</option>
+                <option value="RAG Research">RAG Research</option>
               </select>
             </div>
           </div>

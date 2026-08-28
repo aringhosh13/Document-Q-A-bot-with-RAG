@@ -54,24 +54,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   const sampleQueries = [
     {
-      uni: 'RAG',
-      label: 'Lewis et al. RAG Math',
+      uni: 'Deep Learning',
+      label: 'Transformer Attention Math',
+      query: 'Explain the Scaled Dot-Product Attention formula and how Multi-Head Attention projects queries, keys, and values.',
+    },
+    {
+      uni: 'ML Foundations',
+      label: 'Loss & Bias-Variance Tradeoff',
+      query: 'Derive the Bias-Variance Decomposition and explain how AdamW decoupled weight decay optimizes parameter updates.',
+    },
+    {
+      uni: 'Data Science',
+      label: 'PCA Eigendecomposition',
+      query: 'Explain how Principal Component Analysis (PCA) maximizes projected variance using the covariance matrix eigenvalues.',
+    },
+    {
+      uni: 'Vector Search',
+      label: 'Metric Spaces & HNSW Graph Indexing',
+      query: 'How does Cosine Similarity relate to Euclidean distance on unit hyperspheres, and how does HNSW achieve sub-linear ANN search?',
+    },
+    {
+      uni: 'RAG Research',
+      label: 'Lewis et al. Formulations',
       query: 'Explain the mathematical difference between RAG-Sequence and RAG-Token models according to Lewis et al. 2020.',
-    },
-    {
-      uni: 'Analysis',
-      label: 'Key Findings & Conclusions',
-      query: 'What are the primary conclusions, findings, and technical claims presented in the indexed documents?',
-    },
-    {
-      uni: 'Methods',
-      label: 'Methodology & Data',
-      query: 'Summarize the core methodology, data points, and mathematical formulations discussed.',
-    },
-    {
-      uni: 'Insights',
-      label: 'Challenges & Future Work',
-      query: 'What are the main limitations, practical challenges, and future outlook identified?',
     },
   ];
 
