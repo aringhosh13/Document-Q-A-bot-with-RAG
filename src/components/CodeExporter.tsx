@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Download, Terminal } from 'lucide-react';
+import { Code2, Copy, Check, Download, FileCode, Sparkles, Terminal } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const CodeExporter: React.FC = () => {
@@ -7,8 +7,13 @@ export const CodeExporter: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const pythonCode = `"""
-Document Q&A Bot with Retrieval-Augmented Generation (RAG) From Scratch
-Portfolio Project for University Applications (NUS / NTU / SMU / SUTD)
+Document Q&A Bot with Retrieval-Augmented Generation (RAG)
+Engineered with AI Assistance & Algorithmic Design
+
+AI Collaboration Transparency Statement:
+This pipeline was developed with the assistance of modern AI engineering tools
+for implementation, modular design, and verification, while purposefully building
+the core mathematical and retrieval routines from foundational principles.
 
 Features:
 - Pure algorithmic implementation with Zero Third-Party Framework Lock-in
@@ -85,6 +90,7 @@ def recursive_character_split(
             cid = f"{doc_title}-chunk-{len(chunks) + 1}"
             chunks.append(DocumentChunk(cid, doc_title, first_slice, len(chunks), start_offset, start_offset + len(first_slice)))
 
+        # Sliding overlap advancement
         next_start = max(0, split_idx - chunk_overlap)
         if next_start < len(content) and split_idx < len(content):
             _split(content[next_start:], start_offset + next_start)
@@ -142,7 +148,7 @@ def hybrid_retrieve(
     query_vec: List[float],
     corpus: List[DocumentChunk],
     top_k: int = 4,
-    alpha: float = 0.7
+    alpha: float = 0.7  # 70% Dense, 30% Sparse
 ) -> List[Tuple[DocumentChunk, float]]:
     scored = []
     for chunk in corpus:
@@ -155,7 +161,7 @@ def hybrid_retrieve(
     return scored[:top_k]
 
 # ==============================================================================
-# Step 5: Grounded Prompt Assembly
+# Step 5: Grounded Prompt Assembly & Execution
 # ==============================================================================
 def build_grounded_rag_prompt(question: str, retrieved_chunks: List[Tuple[DocumentChunk, float]]) -> Dict[str, str]:
     formatted_context = ""
@@ -172,17 +178,27 @@ def build_grounded_rag_prompt(question: str, retrieved_chunks: List[Tuple[Docume
 
     user_prompt = f"CONTEXT SOURCES:\\n{formatted_context}\\n\\nQUESTION:\\n{question}\\n\\nAnswer:"
 
-    return {"system_instruction": system_instruction, "user_prompt": user_prompt}
+    return {
+        "system_instruction": system_instruction,
+        "user_prompt": user_prompt
+    }
 
+# ==============================================================================
+# Main Pipeline Demo
+# ==============================================================================
 if __name__ == "__main__":
-    sample_doc = "The Bachelor of Computing in Computer Science at NUS requires good passes in H2 Mathematics..."
-    chunks = recursive_character_split(sample_doc, "NUS_CS_Handbook")
+    sample_doc = "Retrieval-augmented generation (RAG) grounds language model outputs on external document context..."
+    chunks = recursive_character_split(sample_doc, "RAG_Research_Doc")
     print(f"[OK] Ingested & Chunked into {len(chunks)} chunks.")
 `;
 
   const tsCode = `/**
- * Document Q&A Bot with RAG from Scratch (TypeScript)
- * Production-ready modular engine
+ * Document Q&A Bot with Grounded RAG Pipeline (TypeScript)
+ * Engineered with AI Assistance & Algorithmic Design
+ * 
+ * Full Transparency Disclosure:
+ * Built with AI coding assistance for rapid prototyping and clean modularity,
+ * implementing custom chunking, cosine vector similarity, and BM25 sparse search.
  */
 export interface DocumentChunk {
   id: string;
@@ -199,7 +215,7 @@ export interface DocumentChunk {
 export function recursiveSplit(text: string, title: string, chunkSize = 600, overlap = 100): DocumentChunk[] {
   const chunks: DocumentChunk[] = [];
   const separators = ['\\n\\n', '\\n', '. ', ' '];
-
+  
   function split(content: string, start: number) {
     if (content.length <= chunkSize) {
       chunks.push({
@@ -212,6 +228,7 @@ export function recursiveSplit(text: string, title: string, chunkSize = 600, ove
       });
       return;
     }
+    // bisect near chunkSize using separator
     let splitIdx = chunkSize;
     for (const sep of separators) {
       const idx = content.lastIndexOf(sep, chunkSize);
@@ -237,7 +254,7 @@ export function recursiveSplit(text: string, title: string, chunkSize = 600, ove
   return chunks;
 }
 
-// 2. Cosine Similarity
+// 2. Cosine Similarity Formula
 export function cosineSimilarity(vecA: number[], vecB: number[]): number {
   let dot = 0, normA = 0, normB = 0;
   for (let i = 0; i < vecA.length; i++) {
@@ -254,13 +271,17 @@ export function cosineSimilarity(vecA: number[], vecB: number[]): number {
     const code = activeLang === 'python' ? pythonCode : tsCode;
     navigator.clipboard.writeText(code);
     setCopied(true);
-    confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.7 },
+    });
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
     const code = activeLang === 'python' ? pythonCode : tsCode;
-    const filename = activeLang === 'python' ? 'rag_from_scratch.py' : 'ragPipeline.ts';
+    const filename = activeLang === 'python' ? 'rag_pipeline_ai_assisted.py' : 'ragPipeline.ts';
     const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -271,49 +292,54 @@ export function cosineSimilarity(vecA: number[], vecB: number[]): number {
   };
 
   return (
-    <div className="bg-ink-900 rounded-xl border border-ink-800 p-5 sm:p-6 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-ink-800">
+    <div className="bg-slate-900 rounded-2xl border border-slate-800 p-5 sm:p-6 shadow-xl space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
         <div>
-          <h2 className="text-base font-bold text-ink-50 flex items-center gap-2">
-            <Terminal className="w-5 h-5 text-accent-400" />
-            Source Code Exporter
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <Terminal className="w-5 h-5 text-cyan-400" />
+            Complete RAG Source Code Exporter (AI-Assisted Implementation)
           </h2>
-          <p className="text-xs text-ink-500 mt-0.5">
-            Self-contained algorithmic code for your GitHub portfolio
+          <p className="text-xs text-slate-400 mt-0.5">
+            Zero external library lock-in &middot; Transparent algorithmic code engineered with AI collaboration
           </p>
         </div>
 
+        {/* Language selector & actions */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-0.5 bg-ink-850 p-0.5 rounded-lg border border-ink-800 text-xs">
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
             <button
               onClick={() => setActiveLang('python')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-                activeLang === 'python' ? 'bg-accent-500/15 text-accent-300' : 'text-ink-400 hover:text-ink-200'
+              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+                activeLang === 'python'
+                  ? 'bg-cyan-600 text-white shadow'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              Python
+              Python (rag_from_scratch.py)
             </button>
             <button
               onClick={() => setActiveLang('typescript')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-                activeLang === 'typescript' ? 'bg-accent-500/15 text-accent-300' : 'text-ink-400 hover:text-ink-200'
+              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+                activeLang === 'typescript'
+                  ? 'bg-cyan-600 text-white shadow'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              TypeScript
+              TypeScript (ragPipeline.ts)
             </button>
           </div>
 
           <button
             onClick={handleCopyCode}
-            className="px-3 py-1.5 bg-ink-800 hover:bg-ink-700 text-ink-200 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 border border-ink-700"
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border border-slate-700"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copied!' : 'Copy'}</span>
+            <span>{copied ? 'Copied!' : 'Copy Code'}</span>
           </button>
 
           <button
             onClick={handleDownload}
-            className="px-3.5 py-1.5 bg-accent-600 hover:bg-accent-500 text-white rounded-md text-xs font-medium transition-all flex items-center gap-1.5"
+            className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 shadow"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download</span>
@@ -321,13 +347,14 @@ export function cosineSimilarity(vecA: number[], vecB: number[]): number {
         </div>
       </div>
 
-      <div className="relative bg-ink-950 border border-ink-800 rounded-lg overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2 bg-ink-900 border-b border-ink-800 text-xs text-ink-500 font-mono">
+      {/* Code Viewer */}
+      <div className="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs text-slate-400 font-mono">
           <span>{activeLang === 'python' ? 'rag_from_scratch.py' : 'ragPipeline.ts'}</span>
-          <span>{activeLang === 'python' ? 'Python 3.10+' : 'TypeScript ES2022'}</span>
+          <span>{activeLang === 'python' ? 'Python 3.10+ (Standard Library)' : 'TypeScript (ES2022)'}</span>
         </div>
 
-        <pre className="p-4 text-xs font-mono text-ink-300 overflow-x-auto whitespace-pre leading-relaxed max-h-[520px]">
+        <pre className="p-4 text-xs font-mono text-slate-300 overflow-x-auto whitespace-pre leading-relaxed max-h-[520px]">
           {activeLang === 'python' ? pythonCode : tsCode}
         </pre>
       </div>

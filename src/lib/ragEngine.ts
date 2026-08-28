@@ -1,7 +1,8 @@
 import { DocumentChunk, DocumentItem, RetrievalResult, ChunkingConfig } from '../types';
 
 /**
- * RAG Engine from Scratch
+ * Grounded RAG Algorithmic Engine
+ * Engineered with AI Assistance & Algorithmic Design
  * Contains the fundamental algorithmic steps of Retrieval-Augmented Generation:
  * 1. Recursive Character Chunking with Overlap
  * 2. Dense Semantic Vector Embedding & L2 Normalization

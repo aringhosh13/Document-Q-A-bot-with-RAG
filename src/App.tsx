@@ -264,7 +264,7 @@ export default function App() {
   const lastQuery = lastUserMsg?.content || '';
 
   return (
-    <div className="min-h-screen bg-ink-950 text-ink-100 flex flex-col font-sans selection:bg-accent-500 selection:text-ink-950">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
       {/* Top Navigation */}
       <Header
         activeTab={activeTab}
@@ -315,13 +315,14 @@ export default function App() {
                   lastRetrievedResults={lastRetrieved}
                 />
 
-                <div className="p-4 bg-ink-900 rounded-xl border border-ink-800 space-y-2 text-xs text-ink-400">
-                  <div className="text-ink-100 font-semibold flex items-center justify-between">
+                {/* Technical Overview Mini-Card */}
+                <div className="p-4 bg-slate-900 rounded-2xl border border-slate-800 space-y-2 text-xs text-slate-400">
+                  <div className="text-slate-200 font-bold flex items-center justify-between">
                     <span>Active Retrieval Architecture</span>
-                    <span className="font-mono text-accent-400 text-[11px]">Hybrid RRF</span>
+                    <span className="font-mono text-cyan-400 text-[11px]">Hybrid RRF</span>
                   </div>
                   <p className="text-[11px] leading-relaxed">
-                    Uses <strong className="text-ink-200">Dense Cosine Similarity</strong> (256-D unit hypersphere) combined with <strong className="text-ink-200">BM25 Sparse Inverted Index</strong>. Ensures grounded answers citing exact chunk IDs.
+                    Uses <strong>Dense Cosine Similarity</strong> (256-D unit hypersphere) combined with <strong>BM25 Sparse Inverted Index</strong>. Ensures strict zero-hallucination answers citing exact chunk IDs.
                   </p>
                 </div>
               </div>
@@ -329,7 +330,7 @@ export default function App() {
           </div>
         )}
 
-        {/* VIEW 2: Pipeline Lab (From Scratch) */}
+        {/* VIEW 2: Pipeline Lab */}
         {activeTab === 'pipeline' && (
           <div className="space-y-6">
             <PipelineVisualizer
@@ -339,13 +340,13 @@ export default function App() {
 
             <VectorSpaceVisualizer
               allChunks={allIndexedChunks}
-              lastQuery={lastQuery || 'Admissions criteria and deep learning'}
+              lastQuery={lastQuery || 'Retrieval mechanisms and dense vector embeddings'}
               lastRetrievedResults={lastRetrieved}
             />
           </div>
         )}
 
-        {/* VIEW 3: Singapore University Admissions & Defense Kit */}
+        {/* VIEW 3: Technical Defense & Architecture Kit */}
         {activeTab === 'admissions' && <AdmissionsDefense />}
 
         {/* VIEW 4: Source Code Exporter */}
@@ -361,9 +362,10 @@ export default function App() {
         onSelectChunk={(c) => setViewerChunk(c)}
       />
 
-      <footer className="border-t border-ink-900 bg-ink-950 py-4 text-center text-xs text-ink-600">
+      {/* Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950 py-4 text-center text-xs text-slate-500">
         <p>
-          RAG Engine from Scratch &middot; Built with Gemini &amp; TypeScript
+          Document Q&A Engine with Grounded RAG &middot; AI-Assisted Architecture & Engineering &middot; Built with Gemini & TypeScript
         </p>
       </footer>
     </div>

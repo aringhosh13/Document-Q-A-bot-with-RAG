@@ -21,7 +21,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
     dist?: number;
   } | null>(null);
 
-  const [testQuery, setTestQuery] = useState(lastQuery || 'Admissions requirements and machine learning');
+  const [testQuery, setTestQuery] = useState(lastQuery || 'Retrieval mechanisms and dense vector embeddings');
 
   const { chunkCoords, queryCoord, queryVec } = useMemo(() => {
     if (allChunks.length === 0) {
