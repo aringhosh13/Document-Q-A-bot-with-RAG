@@ -18,55 +18,134 @@ export function splitTextRecursively(
   docTitle: string,
   config: ChunkingConfig = { strategy: 'recursive', chunkSize: 600, chunkOverlap: 100, minChunkSize: 80 }
 ): DocumentChunk[] {
-  const chunkSize = Math.max(100, config.chunkSize || 600);
-  const chunkOverlap = Math.min(Math.floor(chunkSize * 0.5), Math.max(0, config.chunkOverlap || 100));
-  const minChunkSize = Math.max(20, config.minChunkSize || 50);
+  const chunkSize = Math.max(120, config.chunkSize || 600);
+  const chunkOverlap = Math.min(Math.floor(chunkSize * 0.4), Math.max(0, config.chunkOverlap || 100));
+  const minChunkSize = Math.max(30, config.minChunkSize || 60);
 
   if (!text || text.trim().length === 0) return [];
 
   const chunks: DocumentChunk[] = [];
-  const separators = ['\n\n', '\n', '. ', '? ', '! ', '; ', ', ', ' '];
-
-  let currentOffset = 0;
   const textLength = text.length;
+  let currentOffset = 0;
+
+  // Helper to check if an index is inside a $$...$$ display math block
+  const isInsideMathBlock = (fullText: string, index: number): boolean => {
+    let count = 0;
+    let pos = 0;
+    while ((pos = fullText.indexOf('$$', pos)) !== -1) {
+      if (pos >= index) break;
+      count++;
+      pos += 2;
+    }
+    return count % 2 === 1;
+  };
 
   while (currentOffset < textLength) {
-    const remainingText = text.slice(currentOffset);
-    
-    // If remaining text fits within chunk size, push and finish
-    if (remainingText.length <= chunkSize) {
-      const trimmed = remainingText.trim();
-      if (trimmed.length >= minChunkSize || chunks.length === 0) {
-        chunks.push(createChunk(trimmed || remainingText, currentOffset, docId, docTitle, chunks.length));
+    const remainingLength = textLength - currentOffset;
+
+    if (remainingLength <= chunkSize) {
+      const remainingText = text.slice(currentOffset).trim();
+      if (remainingText.length >= minChunkSize || chunks.length === 0) {
+        chunks.push(createChunk(remainingText, currentOffset, docId, docTitle, chunks.length));
       }
       break;
     }
 
-    // Look for optimal natural boundary within target window
-    const targetSlice = remainingText.slice(0, chunkSize);
-    let splitPoint = -1;
+    // Determine target slice
+    let targetEnd = currentOffset + chunkSize;
+    const targetSlice = text.slice(currentOffset, targetEnd);
 
-    for (const sep of separators) {
+    // Natural boundary separators in order of structural priority
+    const boundarySeparators = [
+      '\n\n',
+      '\n### ',
+      '\n## ',
+      '\n# ',
+      '\n- ',
+      '\n* ',
+      '\n1. ',
+      '\n2. ',
+      '\n3. ',
+      '\n',
+      '. ',
+      '? ',
+      '! ',
+      '; ',
+      ': ',
+      ' ',
+    ];
+
+    let splitIndex = -1;
+    for (const sep of boundarySeparators) {
       const lastIdx = targetSlice.lastIndexOf(sep);
-      if (lastIdx > minChunkSize) {
-        splitPoint = lastIdx + sep.length;
-        break;
+      if (lastIdx >= minChunkSize) {
+        const potentialEnd = currentOffset + lastIdx + sep.length;
+        // Ensure split does not cut inside a display math block $$ ... $$
+        if (!isInsideMathBlock(text, potentialEnd)) {
+          splitIndex = potentialEnd;
+          break;
+        }
       }
     }
 
-    // Fallback: hard cut at chunkSize if no natural separator found
-    if (splitPoint <= minChunkSize) {
-      splitPoint = chunkSize;
+    // If split inside math block or no boundary found, look forward for math closure or fallback
+    if (splitIndex === -1 || isInsideMathBlock(text, splitIndex)) {
+      const nextMathClose = text.indexOf('$$', currentOffset + minChunkSize);
+      if (nextMathClose !== -1 && nextMathClose - currentOffset < chunkSize * 1.5) {
+        splitIndex = nextMathClose + 2;
+      } else {
+        // Fallback: look for space or hard cut
+        const nextSpace = text.indexOf(' ', targetEnd);
+        splitIndex = (nextSpace !== -1 && nextSpace - currentOffset < chunkSize + 60) ? nextSpace + 1 : targetEnd;
+      }
     }
 
-    const chunkContent = remainingText.slice(0, splitPoint).trim();
+    const chunkContent = text.slice(currentOffset, splitIndex).trim();
     if (chunkContent.length >= minChunkSize || chunks.length === 0) {
       chunks.push(createChunk(chunkContent, currentOffset, docId, docTitle, chunks.length));
     }
 
-    // Advance sliding window with overlap (guaranteed minimum step of 20 chars or 25% chunk size)
-    const stepAdvance = Math.max(20, Math.max(1, splitPoint - chunkOverlap));
-    currentOffset += stepAdvance;
+    // Calculate next starting offset with overlap snapped to a clean word/sentence boundary
+    let idealNextStart = splitIndex - chunkOverlap;
+    if (idealNextStart <= currentOffset) {
+      idealNextStart = splitIndex;
+    }
+
+    if (idealNextStart < textLength) {
+      // Find nearest clean starting point (after \n\n, \n, sentence end, or space)
+      let snappedStart = idealNextStart;
+      const searchWindow = text.slice(Math.max(0, idealNextStart - 80), Math.min(textLength, idealNextStart + 80));
+      const relOffset = idealNextStart - Math.max(0, idealNextStart - 80);
+
+      // Prefer starting at a newline or sentence boundary
+      const cleanStarts = ['\n\n', '\n- ', '\n* ', '\n', '. ', ' '];
+      let bestSnap = -1;
+      let minDistance = 999;
+
+      for (const marker of cleanStarts) {
+        let idx = searchWindow.indexOf(marker);
+        while (idx !== -1) {
+          const absPos = Math.max(0, idealNextStart - 80) + idx + marker.length;
+          const dist = Math.abs(absPos - idealNextStart);
+          if (absPos > currentOffset && absPos < splitIndex && dist < minDistance) {
+            if (!isInsideMathBlock(text, absPos)) {
+              minDistance = dist;
+              bestSnap = absPos;
+            }
+          }
+          idx = searchWindow.indexOf(marker, idx + 1);
+        }
+      }
+
+      if (bestSnap !== -1) {
+        snappedStart = bestSnap;
+      }
+
+      // Ensure progress
+      currentOffset = Math.max(currentOffset + Math.max(20, Math.floor(chunkSize * 0.3)), snappedStart);
+    } else {
+      break;
+    }
   }
 
   // Update total chunks count metadata

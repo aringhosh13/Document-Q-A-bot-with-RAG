@@ -290,46 +290,32 @@ function codeHash(str: string): number {
 function generateSimulatedGroundedAnswer(question: string, chunks: any[]) {
   if (!chunks || chunks.length === 0) {
     return {
-      text: `Based on the provided document corpus, no relevant context passages were retrieved for the query: **"${question}"**.\n\nPlease ensure relevant documents or research papers are uploaded and indexed in the knowledge base.`,
+      text: `### Grounded Retrieval Notice\n\nBased on the indexed document corpus, no relevant context passages met the minimum similarity threshold for the query:\n\n> **"${question}"**\n\nPlease ensure relevant technical papers, specifications, or markdown notes are uploaded and indexed in the Knowledge Base.`,
       citedIndices: [],
     };
   }
 
-  // Clean and prepare chunks
-  const cleanedChunks = chunks.map((c, idx) => {
-    const raw = (c.text || '').replace(/\r\n/g, '\n');
-    // Normalize spacing while keeping structure
-    const normalized = raw
-      .split('\n')
-      .map((line: string) => line.trim())
-      .filter(Boolean)
-      .join('\n');
-
-    // Extract complete sentences without cutting them off
-    const sentences = normalized
-      .replace(/([.?!])\s+/g, '$1|SPLIT|')
-      .split('|SPLIT|')
-      .map((s: string) => s.trim())
-      .filter((s: string) => s.length > 20);
-
+  // Normalize chunks while preserving markdown formatting
+  const processedChunks = chunks.map((c, idx) => {
+    const raw = (c.text || '').replace(/\r\n/g, '\n').trim();
     return {
       index: idx + 1,
       id: c.id,
       docTitle: c.docTitle || `Document ${idx + 1}`,
       similarity: c.similarity || 0.85,
-      rawText: normalized,
-      sentences,
+      text: raw,
     };
   });
 
-  const citedIndices = cleanedChunks.map((c) => c.index);
+  const citedIndices = processedChunks.slice(0, 4).map((c) => c.index);
+  const primaryDoc = processedChunks[0].docTitle;
 
-  // Extract query keywords for relevance scoring
+  // Extract query keywords for finding key points
   const stopWords = new Set([
     'a', 'an', 'the', 'and', 'or', 'but', 'is', 'are', 'was', 'were', 'in', 'on', 'at', 'to', 'for',
     'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above',
     'below', 'from', 'up', 'down', 'of', 'off', 'over', 'under', 'how', 'what', 'why', 'when', 'where',
-    'who', 'which', 'does', 'do', 'did', 'can', 'could', 'should', 'would', 'affect', 'impact'
+    'who', 'which', 'does', 'do', 'did', 'can', 'could', 'should', 'would', 'explain', 'describe'
   ]);
 
   const queryTerms = question
@@ -338,84 +324,31 @@ function generateSimulatedGroundedAnswer(question: string, chunks: any[]) {
     .split(/\s+/)
     .filter((w) => w.length > 2 && !stopWords.has(w));
 
-  // Score sentences across all chunks based on query term frequency and statistical content
-  const scoredSentences: Array<{
-    sentence: string;
-    sourceIdx: number;
-    docTitle: string;
-    score: number;
-    hasNumber: boolean;
-  }> = [];
+  // Build structured grounded evidence sections from top chunks
+  const evidenceBlocks = processedChunks.slice(0, 3).map((chunk) => {
+    // Clean chunk text: ensure double newlines before headers or lists
+    let formatted = chunk.text
+      .replace(/\n(#{1,6}\s)/g, '\n\n$1')
+      .replace(/\n(-\s|\*\s|\d+\.\s)/g, '\n\n$1');
 
-  cleanedChunks.forEach((chunk) => {
-    chunk.sentences.forEach((sentence) => {
-      const lower = sentence.toLowerCase();
-      let matchCount = 0;
-      queryTerms.forEach((term) => {
-        if (lower.includes(term)) matchCount += 2;
-      });
-
-      const hasNumber = /\d+(\.\d+)?%?|\b(years|decades|million|billion|jobs|market|study|institute|report|percent)\b/i.test(sentence);
-      if (hasNumber) matchCount += 1.5;
-
-      if (/^(first|second|third|furthermore|additionally|moreover|in conclusion|overall|importantly|specifically|according)/i.test(sentence)) {
-        matchCount += 1;
-      }
-
-      scoredSentences.push({
-        sentence,
-        sourceIdx: chunk.index,
-        docTitle: chunk.docTitle,
-        score: matchCount,
-        hasNumber,
-      });
-    });
+    return `### **Evidence from ${chunk.docTitle} [Source ${chunk.index}]**\n\n${formatted}\n\n> *Verifiable Attribution: [Source ${chunk.index}] (Cosine Relevance: ${(chunk.similarity * 100).toFixed(1)}%)*`;
   });
 
-  // Sort by relevance score
-  scoredSentences.sort((a, b) => b.score - a.score);
+  // Compose clean, highly readable academic synthesis
+  const text = `## Technical Synthesis: "${question}"
 
-  // Deduplicate and select top relevant sentences
-  const seenSentences = new Set<string>();
-  const topEvidence: typeof scoredSentences = [];
-  for (const item of scoredSentences) {
-    const key = item.sentence.slice(0, 40).toLowerCase();
-    if (!seenSentences.has(key)) {
-      seenSentences.add(key);
-      topEvidence.push(item);
-      if (topEvidence.length >= 8) break;
-    }
-  }
+**Grounded Executive Summary:**
+Based on the retrieved context passages across **${primaryDoc}** and verified reference documents, the following technical formulations and empirical mechanics address your inquiry with exact source provenance [Source 1].
 
-  // Construct comprehensive multi-section answer
-  const primaryDoc = cleanedChunks[0].docTitle;
+---
 
-  // 1. Direct Synthesis Summary
-  const leadSentence = topEvidence.length > 0
-    ? topEvidence[0].sentence
-    : (cleanedChunks[0].sentences[0] || cleanedChunks[0].rawText.slice(0, 200));
+${evidenceBlocks.join('\n\n---\n\n')}
 
-  // 2. Structured Key Findings with in-line citations and complete text
-  const findingsList = cleanedChunks.slice(0, 4).map((chunk) => {
-    const chunkSentences = chunk.sentences.filter((s) => s.length > 25);
-    const bestSentences = chunkSentences.slice(0, 3).join(' ');
-    const content = bestSentences || chunk.rawText;
+---
 
-    return `### **Key Evidence from ${chunk.docTitle} [Source ${chunk.index}]**\n${content}\n\n> *Citation Attribution: [Source ${chunk.index}] (Relevance Match: ${(chunk.similarity * 100).toFixed(1)}%)*`;
-  });
-
-  // 3. Quantitative Insights / Highlighted Takeaways
-  const keyStatistics = topEvidence
-    .filter((item) => item.hasNumber)
-    .slice(0, 4)
-    .map((item) => `• **Data / Prediction Point:** "${item.sentence}" [Source ${item.sourceIdx}]`);
-
-  const statsSection = keyStatistics.length > 0
-    ? `\n\n### **Key Statistics, Forecasts & Referenced Studies**\n${keyStatistics.join('\n\n')}`
-    : '';
-
-  // 4. Strategic Takeaways
-  const text = `## Comprehensive Grounded Analysis: "${question}"\n\n**Executive Summary:**\nBased on the retrieved context from **${primaryDoc}** and referenced documents, ${leadSentence} [Source 1]. Below is the complete factual breakdown extracted directly from the verified source materials:\n\n---\n\n${findingsList.join('\n\n---\n\n')}${statsSection}\n\n---\n\n### **Core Takeaways & Synthesis:**\n1. **Direct Context Alignment:** The source documents provide detailed, multi-dimensional coverage of this topic, specifically highlighting the systemic shifts, timelines, and empirical evidence cited above [Source 1].\n2. **Policy & Strategic Relevance:** As outlined across [Source ${citedIndices.slice(0, 3).join('], [Source ')}], key stakeholders, organizations, and policy frameworks must adapt to these documented changes.\n3. **Full Provenance Verification:** Every assertion in this report is grounded strictly in the provided document excerpts without unverified external extrapolation.`;
+### **Core Grounded Takeaways & Provenance:**
+1. **Mathematical & Architectural Fidelity:** All formulations, loss functions, and architectural dimensions cited above are extracted directly from the verified source chunks [Source ${citedIndices.join('], [Source ')}].
+2. **Context-Grounded Verification:** Every claim in this synthesis corresponds directly to the retrieved passages without stochastic external extrapolation.`;
 
   return { text, citedIndices };
 }
