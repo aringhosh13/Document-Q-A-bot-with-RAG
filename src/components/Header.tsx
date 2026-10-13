@@ -7,7 +7,6 @@ interface HeaderProps {
   documentCount: number;
   chunkCount: number;
   isGeminiConnected: boolean;
-  onOpenAuthorModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,7 +15,6 @@ export const Header: React.FC<HeaderProps> = ({
   documentCount,
   chunkCount,
   isGeminiConnected,
-  onOpenAuthorModal,
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-black/95 backdrop-blur border-b border-ink-800 text-white">
@@ -32,17 +30,13 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="font-bold text-lg tracking-tight text-white font-sans">
                   Grounded RAG Lab
                 </span>
-                <button
-                  onClick={onOpenAuthorModal}
-                  className="px-2 py-0.5 text-xs font-semibold bg-accent-950 text-accent-300 border border-accent-700 hover:border-accent-400 rounded-full transition-all flex items-center gap-1 cursor-pointer"
-                  title="View full project statement and academic attribution"
-                >
+                <span className="px-2 py-0.5 text-xs font-semibold bg-accent-950 text-accent-300 border border-accent-700 rounded-full flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-accent-400" />
                   <span>Arin Ghosh &middot; Christ Academy ICSE School</span>
-                </button>
+                </span>
               </div>
               <p className="text-xs text-ink-300 hidden sm:block">
-                Built by <strong className="text-white">Arin Ghosh</strong> with AI-assisted scaffolding in Google AI Studio &middot; 86.7% Verified Citation Fidelity
+                Built by <strong className="text-white">Arin Ghosh</strong> (Christ Academy ICSE School) with the help of AI &middot; 86.7% Verified Citation Fidelity
               </p>
             </div>
           </div>
@@ -123,16 +117,6 @@ export const Header: React.FC<HeaderProps> = ({
                 {isGeminiConnected ? 'Gemini Grounded' : 'Local Vector Engine'}
               </span>
             </div>
-
-            {onOpenAuthorModal && (
-              <button
-                onClick={onOpenAuthorModal}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-400 text-black font-semibold text-xs transition-all shadow-md cursor-pointer"
-              >
-                <GraduationCap className="w-3.5 h-3.5" />
-                <span>Author Profile</span>
-              </button>
-            )}
           </div>
         </div>
       </div>

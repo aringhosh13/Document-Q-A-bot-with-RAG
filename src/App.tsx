@@ -22,13 +22,11 @@ import { PipelineVisualizer } from './components/PipelineVisualizer';
 import { VectorSpaceVisualizer } from './components/VectorSpaceVisualizer';
 import { AdmissionsDefense } from './components/AdmissionsDefense';
 import { CodeExporter } from './components/CodeExporter';
-import { AuthorStatementModal } from './components/AuthorStatementModal';
 import confetti from 'canvas-confetti';
 
 export default function App() {
   // Navigation
   const [activeTab, setActiveTab] = useState<'chat' | 'pipeline' | 'admissions' | 'code'>('chat');
-  const [isAuthorModalOpen, setIsAuthorModalOpen] = useState(false);
 
   // Chunking & Retrieval Configurations
   const [chunkingConfig, setChunkingConfig] = useState<ChunkingConfig>({
@@ -274,12 +272,11 @@ export default function App() {
         documentCount={documents.length}
         chunkCount={allIndexedChunks.length}
         isGeminiConnected={isGeminiConnected}
-        onOpenAuthorModal={() => setIsAuthorModalOpen(true)}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Author Attribution & Undergraduate Admissions Banner */}
+        {/* Project Attribution Banner */}
         <div className="bg-gradient-to-r from-ink-900 via-ink-900 to-accent-950/40 rounded-xl border border-ink-800 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-accent-500/10 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-xs flex-shrink-0">
@@ -291,24 +288,16 @@ export default function App() {
                   Developed by Arin Ghosh &middot; Christ Academy ICSE School
                 </span>
                 <span className="text-[10px] font-semibold bg-accent-950 text-accent-300 border border-accent-700 px-2 py-0.5 rounded-full">
-                  AI-Assisted Scaffolding
+                  Built with AI Assistance
                 </span>
                 <span className="text-[10px] font-semibold bg-ink-950 text-ink-300 border border-ink-700 px-2 py-0.5 rounded-full">
                   86.7% Citation Accuracy (26/30)
                 </span>
               </div>
               <p className="text-[11px] text-ink-300 mt-0.5">
-                Algorithmic RAG Engine with Linear Algebra & BM25 Hybrid Retrieval &middot; Documentation for Singapore & Hong Kong University Portfolios
+                Algorithmic RAG Engine with Linear Algebra Vector Projections & BM25 Hybrid Retrieval
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={() => setIsAuthorModalOpen(true)}
-              className="px-3.5 py-1.5 bg-accent-500 hover:bg-accent-400 text-black text-xs font-semibold rounded-lg transition-all shadow-md cursor-pointer whitespace-nowrap"
-            >
-              Admissions & Resume Statement
-            </button>
           </div>
         </div>
 
@@ -401,12 +390,6 @@ export default function App() {
         onSelectChunk={(c) => setViewerChunk(c)}
       />
 
-      {/* Author Statement & Resume Modal */}
-      <AuthorStatementModal
-        isOpen={isAuthorModalOpen}
-        onClose={() => setIsAuthorModalOpen(false)}
-      />
-
       {/* Footer */}
       <footer className="border-t border-ink-800 bg-black py-6 text-center text-xs text-ink-400">
         <div className="max-w-7xl mx-auto px-4 space-y-2">
@@ -414,10 +397,10 @@ export default function App() {
             Project Engineered by <strong className="text-white font-semibold">Arin Ghosh</strong> &middot; <strong className="text-white font-semibold">Christ Academy ICSE School</strong>
           </p>
           <p className="text-[11px] text-ink-400">
-            Built with AI-assisted scaffolding in Google AI Studio &middot; Grounded RAG with 256-D Vector Geometry & BM25 Hybrid Retrieval
+            Built with the help of AI &middot; Grounded RAG with 256-D Vector Geometry & BM25 Hybrid Retrieval
           </p>
           <p className="text-[11px] text-ink-400">
-            Benchmark Evaluated: 86.7% Citation Accuracy (26/30 test set queries) &middot; Prepared for Undergraduate Admissions (HKU, HKUST, NUS, NTU, SMU, CUHK, PolyU, CityU)
+            Benchmark Evaluated: 86.7% Citation Accuracy (26/30 test set queries)
           </p>
         </div>
       </footer>

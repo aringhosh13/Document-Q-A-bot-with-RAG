@@ -1,6 +1,6 @@
 {
   "name": "Document Q&A Bot with RAG from Scratch",
-  "description": "An interactive Document Q&A Bot powered by Grounded Retrieval-Augmented Generation (RAG) developed by Arin Ghosh (Christ Academy ICSE School) with AI-assisted scaffolding in Google AI Studio, featuring custom vector indexing, BM25 hybrid search, and admissions defense documentation.",
+  "description": "An interactive Document Q&A Bot powered by Grounded Retrieval-Augmented Generation (RAG) developed by Arin Ghosh (Christ Academy ICSE School) with the help of AI, featuring custom vector indexing, BM25 hybrid search, and interactive technical architecture defense.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

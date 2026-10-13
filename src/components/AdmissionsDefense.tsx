@@ -9,19 +9,11 @@ import {
   Copy,
   Check,
   CheckCircle2,
-  User,
-  School,
-  ShieldCheck,
-  AlertTriangle,
-  Award,
-  BookOpen,
-  MessageSquare,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const AdmissionsDefense: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'author' | 'overview' | 'foundations' | 'ragas'>('author');
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'foundations' | 'ragas'>('overview');
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>('ALL');
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(
     ADMISSIONS_DEFENSE_DATA[0]?.id || null
@@ -40,19 +32,9 @@ export const AdmissionsDefense: React.FC = () => {
     });
   };
 
-  const personalStatementText = `Investigating hallucination mitigation and citation fidelity in Retrieval-Augmented Generation (RAG), I designed and evaluated an end-to-end document question-answering architecture using AI-assisted scaffolding in Google AI Studio. At Christ Academy ICSE School, I formulated recursive semantic chunking, dual hybrid retrieval (combining dense 256-D cosine embeddings on unit hyperspheres with sparse BM25 term frequencies), and strict token-level provenance constraints mapping claims to exact source character offsets. In a benchmark evaluation across a 30-query technical corpus, the system achieved 86.7% citation accuracy (26/30 queries correctly traced). However, empirical stress testing exposed an authentic limitation: citation tracing degraded when resolving contradictory claims across conflicting source documents. This boundary motivated my current exploration into cross-document coreference resolution and multi-hop verification—a research focus I seek to advance in undergraduate study.`;
-
-  const resumeEntryText = `Grounded RAG Document Intelligence Engine
-Developer: Arin Ghosh (Christ Academy ICSE School) | AI-Assisted Engineering (Google AI Studio)
-- Engineered a grounded Retrieval-Augmented Generation (RAG) engine utilizing AI-assisted scaffolding in Google AI Studio, authoring chunking algorithms, vector similarity metrics, and provenance citation constraints.
-- Designed hybrid dual-retrieval pipeline combining Dense Vector Embeddings (Cosine Similarity on unit hyperspheres) and Sparse Inverted Index (BM25) to eliminate hallucinations in technical document querying.
-- Evaluated retrieval fidelity on a 30-query test set, achieving 86.7% citation accuracy (26/30) while documenting edge cases involving contradictory source inputs.`;
-
-  const shortBlurbText = `Developed by Arin Ghosh (Christ Academy ICSE School) using AI-assisted scaffolding in Google AI Studio. The project implements grounded Retrieval-Augmented Generation (RAG) with recursive chunking, hybrid dense/sparse search (Cosine + BM25), and token-level citation tracing, achieving 86.7% citation accuracy (26/30) on technical document queries with documented limitations on conflicting sources.`;
-
   const projectAbstract = `Project Title: "Algorithmic Retrieval-Augmented Generation (RAG) Engine with Hybrid Vector Retrieval & Grounded Provenance"
 Lead Developer: Arin Ghosh (Christ Academy ICSE School)
-Development Methodology: AI-Assisted Scaffolding in Google AI Studio
+Development Methodology: Built with the help of AI in Google AI Studio
 
 Engineering & Research Statement:
 This pipeline is engineered from foundational principles to understand, design, and validate core information retrieval and linear algebra mechanisms in real time.
@@ -76,13 +58,6 @@ Demonstrates software engineering rigor, linear algebra concepts (unit hypersphe
     setTimeout(() => setCopiedPitch(false), 2500);
   };
 
-  const handleCopySnippet = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    triggerConfetti();
-    setTimeout(() => setCopiedKey(null), 2500);
-  };
-
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -92,27 +67,16 @@ Demonstrates software engineering rigor, linear algebra concepts (unit hypersphe
             <div className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-accent-400" />
               <h2 className="text-base sm:text-lg font-bold text-white font-sans">
-                Academic Project Defense & Author Attribution
+                Technical Architecture & Algorithmic Defense
               </h2>
             </div>
             <p className="text-xs text-ink-300 mt-0.5">
-              Developed by <strong className="text-white">Arin Ghosh</strong> (Christ Academy ICSE School) with AI assistance &middot; Singapore & HK Admissions Portfolio
+              Engineered by <strong className="text-white">Arin Ghosh</strong> (Christ Academy ICSE School) with the help of AI
             </p>
           </div>
 
           {/* Sub-tabs */}
           <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-ink-800 text-xs flex-wrap">
-            <button
-              onClick={() => setActiveTab('author')}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all flex items-center gap-1.5 ${
-                activeTab === 'author'
-                  ? 'bg-accent-600 text-white shadow font-semibold'
-                  : 'text-ink-400 hover:text-white'
-              }`}
-            >
-              <User className="w-3.5 h-3.5 text-accent-400" />
-              <span>Author & Admissions Statement</span>
-            </button>
             <button
               onClick={() => setActiveTab('overview')}
               className={`px-3 py-1.5 rounded-md font-medium transition-all ${
@@ -121,7 +85,7 @@ Demonstrates software engineering rigor, linear algebra concepts (unit hypersphe
                   : 'text-ink-400 hover:text-white'
               }`}
             >
-              Project Overview & Abstract
+              Project Architecture & Abstract
             </button>
             <button
               onClick={() => setActiveTab('foundations')}
@@ -145,141 +109,6 @@ Demonstrates software engineering rigor, linear algebra concepts (unit hypersphe
             </button>
           </div>
         </div>
-
-        {/* Tab 0: Author & Admissions Statement */}
-        {activeTab === 'author' && (
-          <div className="mt-5 space-y-5 animate-fade-in">
-            {/* Identity Banner */}
-            <div className="p-4 sm:p-5 rounded-xl bg-black border border-ink-700 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2.5 rounded-xl bg-accent-500/10 text-accent-400 border border-accent-500/20">
-                  <User className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-[11px] font-bold text-ink-400 uppercase tracking-wider block">
-                    Lead Student Researcher & Developer
-                  </span>
-                  <span className="text-base font-bold text-white">Arin Ghosh</span>
-                  <p className="text-xs text-ink-300 mt-1 leading-relaxed">
-                    Designed chunking boundaries, linear algebra vector embeddings on unit hyperspheres, BM25 hybrid ranking, and token-level citation constraints.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="p-2.5 rounded-xl bg-accent-500/10 text-accent-400 border border-accent-500/20">
-                  <School className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-[11px] font-bold text-ink-400 uppercase tracking-wider block">
-                    Academic Institution
-                  </span>
-                  <span className="text-base font-bold text-white">Christ Academy ICSE School</span>
-                  <p className="text-xs text-ink-300 mt-1 leading-relaxed">
-                    Prepared for undergraduate scholarship applications: HKU, HKUST, NUS, NTU, SMU, CUHK, PolyU, and CityU.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Empirical Outcome + Technical Boundary */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-black border border-accent-900/60 space-y-2">
-                <div className="flex items-center gap-2 text-accent-400 font-bold text-xs uppercase tracking-wider">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Empirical Evaluation Outcome</span>
-                </div>
-                <div className="text-2xl font-extrabold text-white font-mono">
-                  86.7% <span className="text-xs text-accent-400 font-sans font-normal">(26 / 30 Queries Verified)</span>
-                </div>
-                <p className="text-xs text-ink-300 leading-relaxed">
-                  Systematic benchmark testing across a 30-query test set verified exact character-level citations and grounded factual synthesis without hallucination.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-black border border-amber-900/60 space-y-2">
-                <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Documented Research Limitation</span>
-                </div>
-                <div className="text-xs font-bold text-white">
-                  Contradictory Source Discrepancies
-                </div>
-                <p className="text-xs text-ink-300 leading-relaxed">
-                  Stress testing revealed that single-pass semantic retrieval struggles when multiple documents present mutually conflicting facts, establishing a clear motivation for future multi-hop graph verification.
-                </p>
-              </div>
-            </div>
-
-            {/* 1. Personal Statement */}
-            <div className="p-4 sm:p-5 rounded-xl bg-black border border-ink-700 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-accent-400" />
-                  <h4 className="text-xs sm:text-sm font-bold text-white">
-                    Personal Statement Paragraph (~150 words)
-                  </h4>
-                </div>
-                <button
-                  onClick={() => handleCopySnippet(personalStatementText, 'ps')}
-                  className="px-3 py-1.5 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow"
-                >
-                  {copiedKey === 'ps' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedKey === 'ps' ? 'Copied to Clipboard!' : 'Copy Paragraph'}</span>
-                </button>
-              </div>
-              <p className="text-[11px] text-ink-400">
-                Recommended for personal statements to HKU, HKUST, NUS, NTU, SMU, CUHK, PolyU, and CityU.
-              </p>
-              <div className="p-4 bg-ink-950 rounded-lg border border-ink-800 text-xs text-ink-200 leading-relaxed whitespace-pre-wrap font-sans">
-                {personalStatementText}
-              </div>
-            </div>
-
-            {/* 2. Resume / CV */}
-            <div className="p-4 sm:p-5 rounded-xl bg-black border border-ink-700 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-accent-400" />
-                  <h4 className="text-xs sm:text-sm font-bold text-white">
-                    Resume / CV Experience Bullets
-                  </h4>
-                </div>
-                <button
-                  onClick={() => handleCopySnippet(resumeEntryText, 'resume')}
-                  className="px-3 py-1.5 bg-accent-600 hover:bg-accent-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow"
-                >
-                  {copiedKey === 'resume' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedKey === 'resume' ? 'Copied!' : 'Copy Bullets'}</span>
-                </button>
-              </div>
-              <p className="text-[11px] text-ink-400">
-                Formatted bullet points with active engineering verbs, quantifiable metrics, and honest AI collaboration credit.
-              </p>
-              <div className="p-4 bg-ink-950 rounded-lg border border-ink-800 text-xs text-ink-300 font-mono leading-relaxed whitespace-pre-wrap">
-                {resumeEntryText}
-              </div>
-            </div>
-
-            {/* 3. Interview Defense / Honesty Gap Q&A */}
-            <div className="p-4 sm:p-5 rounded-xl bg-black border border-ink-700 space-y-3">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-accent-400" />
-                <h4 className="text-xs sm:text-sm font-bold text-white">
-                  Admissions Interview Defense: How to Answer the "AI Scaffolding" Question
-                </h4>
-              </div>
-              <div className="p-4 bg-ink-950 rounded-lg border border-ink-800 text-xs text-ink-200 leading-relaxed space-y-2">
-                <p>
-                  <strong className="text-accent-300">If the Admissions Committee asks:</strong> <em>"Did you build this yourself or did an AI write the code?"</em>
-                </p>
-                <p className="text-ink-300">
-                  <strong className="text-white">Suggested Response:</strong> "I leveraged AI-assisted scaffolding in Google AI Studio to accelerate boilerplate implementation, but I took ownership of the core system architecture: formulating the recursive chunking boundaries, designing the hybrid vector retrieval mathematics (Dense Cosine Similarity + BM25), establishing strict prompt grounding constraints, and empirically testing citation fidelity across 30 questions (86.7% accuracy). I also documented its failure mode on contradictory sources."
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Tab 1: Project Overview & Abstract */}
         {activeTab === 'overview' && (
