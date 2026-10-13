@@ -351,43 +351,69 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
                         {expandedSourcesMsgId === msg.id && (
                           <div className="mt-2 space-y-2 animate-in fade-in duration-150">
-                            {msg.retrievedChunks.map((res, i) => (
-                              <div
-                                key={i}
-                                className="bg-ink-850 border border-ink-800 rounded-xl p-3 space-y-1.5"
-                              >
-                                <div className="flex items-center justify-between text-[10px]">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="px-1.5 py-0.5 rounded bg-accent-950 text-accent-400 font-bold border border-accent-800">
-                                      Source {i + 1}
-                                    </span>
-                                    <span className="font-semibold text-ink-200 truncate max-w-[200px]">
-                                      {res.chunk.docTitle}
-                                    </span>
-                                    <span className="text-ink-500 font-mono">
-                                      #Chunk {res.chunk.chunkIndex + 1}
-                                    </span>
-                                  </div>
+                            {msg.retrievedChunks.map((res, i) => {
+                              const chunkColor = res.chunk.docColor || '#10b981';
+                              const colorName = res.chunk.docColorName;
 
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-accent-400 font-semibold font-mono">
-                                      {(res.similarity * 100).toFixed(1)}% Cosine
-                                    </span>
-                                    <button
-                                      onClick={() => onOpenViewerWithChunk(res.chunk)}
-                                      className="text-accent-400 hover:text-accent-300 underline text-[10px] flex items-center gap-0.5"
-                                    >
-                                      Inspect <ExternalLink className="w-2.5 h-2.5" />
-                                    </button>
+                              return (
+                                <div
+                                  key={i}
+                                  className="bg-ink-850 border rounded-xl p-3 space-y-1.5 transition-all"
+                                  style={{
+                                    borderLeftColor: chunkColor,
+                                    borderLeftWidth: '3.5px',
+                                    borderColor: `${chunkColor}30`,
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between text-[10px]">
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                      <span
+                                        className="px-1.5 py-0.5 rounded font-bold border flex items-center gap-1 font-mono"
+                                        style={{
+                                          color: chunkColor,
+                                          backgroundColor: `${chunkColor}15`,
+                                          borderColor: `${chunkColor}40`,
+                                        }}
+                                      >
+                                        <span
+                                          className="w-1.5 h-1.5 rounded-full inline-block"
+                                          style={{ backgroundColor: chunkColor }}
+                                        />
+                                        Source {i + 1}
+                                        {colorName && <span>&middot; {colorName}</span>}
+                                      </span>
+                                      <span className="font-semibold text-ink-200 truncate max-w-[200px]">
+                                        {res.chunk.docTitle}
+                                      </span>
+                                      <span className="text-ink-500 font-mono">
+                                        #Chunk {res.chunk.chunkIndex + 1}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className="font-semibold font-mono"
+                                        style={{ color: chunkColor }}
+                                      >
+                                        {(res.similarity * 100).toFixed(1)}% Cosine
+                                      </span>
+                                      <button
+                                        onClick={() => onOpenViewerWithChunk(res.chunk)}
+                                        className="hover:underline text-[10px] flex items-center gap-0.5"
+                                        style={{ color: chunkColor }}
+                                      >
+                                        Inspect <ExternalLink className="w-2.5 h-2.5" />
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
 
                                 <p className="text-[11px] text-ink-300 font-mono bg-black p-2 rounded-lg leading-relaxed line-clamp-3 border border-ink-800">
                                   {res.chunk.text}
                                 </p>
                               </div>
-                            ))}
-                          </div>
+                            );
+                          })}
+                        </div>
                         )}
                       </div>
                     )}

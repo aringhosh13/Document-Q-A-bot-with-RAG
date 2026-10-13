@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { DocumentItem, ChunkingConfig } from '../types';
 import { parseFileToText } from '../lib/documentParser';
+import { getDocumentColor } from '../lib/documentColors';
 import {
   FileText,
   UploadCloud,
@@ -9,6 +10,7 @@ import {
   Eye,
   Sparkles,
   Layers,
+  Palette,
 } from 'lucide-react';
 
 interface DocumentManagerProps {
@@ -54,7 +56,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
           id: `doc-${Date.now()}-${i}`,
           title: file.name,
           category: 'user_upload',
-          institution: 'AI & Deep Learning',
+          institution: 'User Upload',
           summary: `Uploaded ${file.type || 'text'} · ${wordCount} words · ${pageCount} pages`,
           content: text,
           fileType: file.name.endsWith('.pdf') ? 'pdf' : 'txt',
@@ -145,56 +147,92 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       {activeTab === 'list' && (
         <div className="mt-4 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
-            {documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="bg-ink-850 hover:bg-ink-800 border border-ink-800 hover:border-ink-700 rounded-lg p-3.5 flex flex-col justify-between transition-all group"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border ${institutionColor(doc.institution)}`}>
-                        {doc.institution || 'DOC'}
-                      </span>
-                      <span className="text-[10px] text-ink-500 uppercase font-mono">
-                        {doc.fileType}
-                      </span>
+            {documents.map((doc, idx) => {
+              const color = getDocumentColor(doc, idx);
+              const isUpload = doc.category === 'user_upload';
+
+              return (
+                <div
+                  key={doc.id}
+                  className="bg-ink-850 hover:bg-ink-800 border rounded-lg p-3.5 flex flex-col justify-between transition-all group shadow-sm hover:shadow-md"
+                  style={{
+                    borderLeftColor: color.hex,
+                    borderLeftWidth: '3.5px',
+                    borderColor: `${color.hex}25`,
+                  }}
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {/* Colour code badge */}
+                        <span
+                          className="text-[9px] font-mono font-bold tracking-tight px-1.5 py-0.5 rounded border flex items-center gap-1"
+                          style={{
+                            color: color.hex,
+                            backgroundColor: `${color.hex}15`,
+                            borderColor: `${color.hex}35`,
+                          }}
+                        >
+                          <span
+                            className="w-1.5 h-1.5 rounded-full inline-block"
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          {color.name}
+                        </span>
+
+                        <span
+                          className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border ${
+                            isUpload
+                              ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800/40'
+                              : 'bg-ink-800 text-ink-300 border-ink-700'
+                          }`}
+                        >
+                          {isUpload ? 'User Upload' : doc.institution || 'Base Doc'}
+                        </span>
+
+                        <span className="text-[10px] text-ink-500 uppercase font-mono">
+                          {doc.fileType}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => onOpenViewer(doc)}
+                          className="p-1 text-ink-400 hover:text-accent-400 hover:bg-ink-700 rounded transition-colors"
+                          title="View document & chunks"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => onDeleteDocument(doc.id)}
+                          className="p-1 text-ink-500 hover:text-rose-400 hover:bg-ink-700 rounded transition-colors"
+                          title="Remove document"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => onOpenViewer(doc)}
-                        className="p-1 text-ink-400 hover:text-accent-400 hover:bg-ink-700 rounded transition-colors"
-                        title="View document"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => onDeleteDocument(doc.id)}
-                        className="p-1 text-ink-500 hover:text-rose-400 hover:bg-ink-700 rounded transition-colors"
-                        title="Remove document"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+
+                    <h3 className="text-xs font-semibold text-ink-100 mt-2 line-clamp-2">
+                      {doc.title}
+                    </h3>
+                    <p className="text-[11px] text-ink-500 mt-1 line-clamp-2 leading-relaxed">
+                      {doc.summary}
+                    </p>
                   </div>
 
-                  <h3 className="text-xs font-semibold text-ink-100 mt-2 line-clamp-2">
-                    {doc.title}
-                  </h3>
-                  <p className="text-[11px] text-ink-500 mt-1 line-clamp-2 leading-relaxed">
-                    {doc.summary}
-                  </p>
+                  <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-ink-800 text-[10px] text-ink-500 font-mono">
+                    <span className="flex items-center gap-1">
+                      <strong className="text-ink-300">{doc.chunks.length}</strong> chunks
+                      <span className="text-ink-600">&middot;</span>
+                      <span style={{ color: color.hex }} className="font-semibold">{color.hex}</span>
+                    </span>
+                    <span>{doc.wordCount.toLocaleString()} words</span>
+                    <span>~{doc.pageCount}pg</span>
+                  </div>
                 </div>
-
-                <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-ink-800 text-[10px] text-ink-500 font-mono">
-                  <span>
-                    <strong className="text-ink-300">{doc.chunks.length}</strong> chunks
-                  </span>
-                  <span>{doc.wordCount.toLocaleString()} words</span>
-                  <span>~{doc.pageCount}pg</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {documents.length === 0 && (
@@ -248,6 +286,16 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
               ))}
             </div>
           </div>
+
+          <div className="mt-3 p-3 rounded-lg bg-ink-850/80 border border-ink-800 flex items-center gap-2.5 text-xs text-ink-400">
+            <span className="p-1 rounded bg-accent-500/10 text-accent-400 shrink-0">
+              <Palette className="w-3.5 h-3.5" />
+            </span>
+            <p className="text-[11px] leading-relaxed">
+              <strong className="text-white font-medium">Automatic Colour Coding:</strong> Each file you upload will be assigned a distinct colour code. It will be recorded in the footer registry, visualized on the 256-D vector map, and cited in query responses.
+            </p>
+          </div>
+
           {uploadStatus && (
             <p className="text-xs text-accent-400 text-center mt-3 animate-pulse">{uploadStatus}</p>
           )}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { DocumentItem, DocumentChunk } from '../types';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { X, FileText, Layers, Search, BookOpen, CircleCheck as CheckCircle, Copy } from 'lucide-react';
+import { getDocumentColor } from '../lib/documentColors';
+import { X, FileText, Layers, Search, BookOpen, CircleCheck as CheckCircle, Copy, Palette } from 'lucide-react';
 
 interface DocumentViewerModalProps {
   isOpen: boolean;
@@ -32,6 +33,8 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
 
   if (!isOpen || !document) return null;
 
+  const color = getDocumentColor(document);
+
   const filteredChunks = (document.chunks || []).filter(
     (c) =>
       c.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -46,19 +49,46 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
+      <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="px-6 py-4 bg-ink-850 border-b border-ink-800 flex items-center justify-between">
+        <div
+          className="px-6 py-4 bg-ink-850 border-b flex items-center justify-between"
+          style={{
+            borderLeftColor: color.hex,
+            borderLeftWidth: '4px',
+            borderColor: `${color.hex}25`,
+          }}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-accent-500/10 border border-accent-500/20 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-accent-400" />
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center border"
+              style={{
+                backgroundColor: `${color.hex}15`,
+                borderColor: `${color.hex}30`,
+                color: color.hex,
+              }}
+            >
+              <FileText className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-ink-50 truncate max-w-md sm:max-w-xl">
-                {document.title}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-ink-50 truncate max-w-md sm:max-w-xl">
+                  {document.title}
+                </h3>
+                <span
+                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border inline-flex items-center gap-1.5"
+                  style={{
+                    color: color.hex,
+                    backgroundColor: `${color.hex}15`,
+                    borderColor: `${color.hex}35`,
+                  }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: color.hex }} />
+                  {color.name} &middot; {color.hex}
+                </span>
+              </div>
               <p className="text-xs text-ink-500 flex items-center gap-2 mt-0.5">
-                <span className="text-accent-400 font-medium">{document.institution || 'Document'}</span>
+                <span className="text-ink-300 font-medium">{document.institution || 'Document'}</span>
                 <span className="text-ink-700">·</span>
                 <span>{document.wordCount.toLocaleString()} words</span>
                 <span className="text-ink-700">·</span>

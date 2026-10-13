@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { DocumentChunk, RetrievalResult } from '../types';
 import { projectVectorsTo2D, cosineSimilarity, generateLocalEmbedding } from '../lib/ragEngine';
+import { DOCUMENT_PALETTE } from '../lib/documentColors';
 import { Compass, Search, Filter, Sparkles, Layers, RefreshCw } from 'lucide-react';
 
 interface VectorSpaceVisualizerProps {
@@ -95,6 +96,22 @@ export const COLOR_PALETTE: ColorTheme[] = [
 
 // Helper to determine or assign color style based on document title / ID
 export function getChunkColorStyle(chunk: DocumentChunk, allDocTitles: string[]): ColorTheme {
+  if (chunk.docColor) {
+    const pal = DOCUMENT_PALETTE.find((p) => p.hex.toLowerCase() === chunk.docColor?.toLowerCase());
+    if (pal) {
+      return {
+        id: pal.id,
+        label: chunk.docTitle || pal.name,
+        dotBg: pal.dot,
+        ringColor: pal.ring,
+        badgeBg: pal.badgeBg,
+        textColor: pal.textColor,
+        border: pal.border,
+        hex: pal.hex,
+      };
+    }
+  }
+
   const t = (chunk.docTitle || '').toLowerCase();
   
   if (t.includes('lewis') || t.includes('retrieval-augmented') || t.includes('rag')) {
@@ -115,8 +132,18 @@ export function getChunkColorStyle(chunk: DocumentChunk, allDocTitles: string[])
 
   // Fallback hashing for uploaded / custom documents
   const docIdx = allDocTitles.indexOf(chunk.docTitle);
-  const paletteIdx = docIdx >= 0 ? 5 + (docIdx % 2) : 5;
-  return COLOR_PALETTE[paletteIdx] || COLOR_PALETTE[5];
+  const paletteIdx = docIdx >= 0 ? docIdx % DOCUMENT_PALETTE.length : 0;
+  const pal = DOCUMENT_PALETTE[paletteIdx];
+  return {
+    id: pal.id,
+    label: chunk.docTitle || pal.name,
+    dotBg: pal.dot,
+    ringColor: pal.ring,
+    badgeBg: pal.badgeBg,
+    textColor: pal.textColor,
+    border: pal.border,
+    hex: pal.hex,
+  };
 }
 
 export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({

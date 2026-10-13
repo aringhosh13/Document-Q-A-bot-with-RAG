@@ -22,6 +22,8 @@ import { PipelineVisualizer } from './components/PipelineVisualizer';
 import { VectorSpaceVisualizer } from './components/VectorSpaceVisualizer';
 import { AdmissionsDefense } from './components/AdmissionsDefense';
 import { CodeExporter } from './components/CodeExporter';
+import { Footer } from './components/Footer';
+import { assignColorToDocument, DOCUMENT_PALETTE } from './lib/documentColors';
 import confetti from 'canvas-confetti';
 
 export default function App() {
@@ -70,10 +72,21 @@ export default function App() {
 
   // Initialize and index sample documents on first load
   useEffect(() => {
-    const initialized = INITIAL_DOCUMENTS.map((doc) => {
-      const chunks = splitTextRecursively(doc.content, doc.id, doc.title, chunkingConfig);
+    const initialized = INITIAL_DOCUMENTS.map((doc, idx) => {
+      const colorTheme = assignColorToDocument(idx);
+      const chunks = splitTextRecursively(
+        doc.content,
+        doc.id,
+        doc.title,
+        chunkingConfig,
+        colorTheme.hex,
+        colorTheme.name
+      );
       return {
         ...doc,
+        colorTheme,
+        color: colorTheme.hex,
+        colorName: colorTheme.name,
         chunks,
       };
     });
@@ -83,10 +96,23 @@ export default function App() {
   // Re-chunk all documents when chunking configuration changes
   const handleRechunkAll = useCallback(() => {
     setDocuments((prevDocs) =>
-      prevDocs.map((doc) => ({
-        ...doc,
-        chunks: splitTextRecursively(doc.content, doc.id, doc.title, chunkingConfig),
-      }))
+      prevDocs.map((doc, idx) => {
+        const colorTheme = doc.colorTheme || assignColorToDocument(idx);
+        return {
+          ...doc,
+          colorTheme,
+          color: colorTheme.hex,
+          colorName: colorTheme.name,
+          chunks: splitTextRecursively(
+            doc.content,
+            doc.id,
+            doc.title,
+            chunkingConfig,
+            colorTheme.hex,
+            colorTheme.name
+          ),
+        };
+      })
     );
     confetti({
       particleCount: 40,
@@ -100,13 +126,33 @@ export default function App() {
     const id = newDoc.id || `doc-${Date.now()}`;
     const title = newDoc.title || 'Untitled Document';
     const content = newDoc.content || '';
-    const chunks = splitTextRecursively(content, id, title, chunkingConfig);
+
+    // Assign a unique, distinct colour code to each uploaded file
+    const existingHexes = new Set(
+      documents.map((d) => (d.colorTheme?.hex || d.color || '').toLowerCase())
+    );
+    const availableTheme =
+      DOCUMENT_PALETTE.find((p) => !existingHexes.has(p.hex.toLowerCase())) ||
+      assignColorToDocument(documents.length);
+
+    const colorTheme = newDoc.colorTheme || availableTheme;
+    const color = colorTheme.hex;
+    const colorName = colorTheme.name;
+
+    const chunks = splitTextRecursively(
+      content,
+      id,
+      title,
+      chunkingConfig,
+      color,
+      colorName
+    );
 
     const fullDoc: DocumentItem = {
       id,
       title,
       category: newDoc.category || 'user_upload',
-      institution: newDoc.institution || 'General AI',
+      institution: newDoc.institution || (newDoc.category === 'user_upload' ? 'User Upload' : 'Document'),
       summary: newDoc.summary || `Document containing ${newDoc.wordCount || 0} words.`,
       content,
       fileType: newDoc.fileType || 'txt',
@@ -114,6 +160,9 @@ export default function App() {
       wordCount: newDoc.wordCount || content.split(/\s+/).length,
       charCount: newDoc.charCount || content.length,
       dateAdded: newDoc.dateAdded || new Date().toISOString().split('T')[0],
+      colorTheme,
+      color,
+      colorName,
       chunks,
     };
 
@@ -390,20 +439,8 @@ export default function App() {
         onSelectChunk={(c) => setViewerChunk(c)}
       />
 
-      {/* Footer */}
-      <footer className="border-t border-ink-800 bg-black py-6 text-center text-xs text-ink-400">
-        <div className="max-w-7xl mx-auto px-4 space-y-2">
-          <p className="font-medium text-ink-300">
-            Project Engineered by <strong className="text-white font-semibold">Arin Ghosh</strong> &middot; <strong className="text-white font-semibold">Christ Academy ICSE School</strong>
-          </p>
-          <p className="text-[11px] text-ink-400">
-            Built with the help of AI &middot; Grounded RAG with 256-D Vector Geometry & BM25 Hybrid Retrieval
-          </p>
-          <p className="text-[11px] text-ink-400">
-            Benchmark Evaluated: 86.7% Citation Accuracy (26/30 test set queries)
-          </p>
-        </div>
-      </footer>
+      {/* Footer mentioning each uploaded file and its distinct assigned color code */}
+      <Footer documents={documents} onOpenViewer={handleOpenViewer} />
     </div>
   );
 }

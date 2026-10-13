@@ -16,7 +16,9 @@ export function splitTextRecursively(
   text: string,
   docId: string,
   docTitle: string,
-  config: ChunkingConfig = { strategy: 'recursive', chunkSize: 600, chunkOverlap: 100, minChunkSize: 80 }
+  config: ChunkingConfig = { strategy: 'recursive', chunkSize: 600, chunkOverlap: 100, minChunkSize: 80 },
+  docColor?: string,
+  docColorName?: string
 ): DocumentChunk[] {
   const chunkSize = Math.max(120, config.chunkSize || 600);
   const chunkOverlap = Math.min(Math.floor(chunkSize * 0.4), Math.max(0, config.chunkOverlap || 100));
@@ -46,7 +48,7 @@ export function splitTextRecursively(
     if (remainingLength <= chunkSize) {
       const remainingText = text.slice(currentOffset).trim();
       if (remainingText.length >= minChunkSize || chunks.length === 0) {
-        chunks.push(createChunk(remainingText, currentOffset, docId, docTitle, chunks.length));
+        chunks.push(createChunk(remainingText, currentOffset, docId, docTitle, chunks.length, docColor, docColorName));
       }
       break;
     }
@@ -102,7 +104,7 @@ export function splitTextRecursively(
 
     const chunkContent = text.slice(currentOffset, splitIndex).trim();
     if (chunkContent.length >= minChunkSize || chunks.length === 0) {
-      chunks.push(createChunk(chunkContent, currentOffset, docId, docTitle, chunks.length));
+      chunks.push(createChunk(chunkContent, currentOffset, docId, docTitle, chunks.length, docColor, docColorName));
     }
 
     // Calculate next starting offset with overlap snapped to a clean word/sentence boundary
@@ -162,7 +164,9 @@ function createChunk(
   start: number,
   docId: string,
   docTitle: string,
-  index: number
+  index: number,
+  docColor?: string,
+  docColorName?: string
 ): DocumentChunk {
   const tokenEstimate = Math.ceil(text.length / 4);
   const sparseTerms = computeTermFrequencies(text);
@@ -182,6 +186,8 @@ function createChunk(
     vector,
     norm,
     sparseTerms,
+    docColor,
+    docColorName,
   };
 }
 

@@ -1,3 +1,5 @@
+import type { DocumentColorTheme } from './lib/documentColors';
+
 export type DocumentCategory = 'academic' | 'research' | 'user_upload' | 'technical';
 
 export interface DocumentChunk {
@@ -13,6 +15,8 @@ export interface DocumentChunk {
   vector?: number[];
   norm?: number;
   sparseTerms?: Record<string, number>;
+  docColor?: string;
+  docColorName?: string;
 }
 
 export interface DocumentItem {
@@ -28,6 +32,9 @@ export interface DocumentItem {
   dateAdded: string;
   fileType: 'pdf' | 'txt' | 'md' | 'code';
   chunks: DocumentChunk[];
+  colorTheme?: DocumentColorTheme;
+  color?: string;
+  colorName?: string;
 }
 
 export interface RetrievalResult {
