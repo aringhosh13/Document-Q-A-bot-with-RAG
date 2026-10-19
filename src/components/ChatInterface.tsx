@@ -1,30 +1,7 @@
-import React, { useState } from 'react';
-import {
-  ChatMessage,
-  RetrievalConfig,
-  RetrievalResult,
-  DocumentChunk,
-  DocumentItem,
-} from '../types';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowUp, ArrowUpRight, Check, ChevronDown, Clock3, Copy, FileText, LoaderCircle, MessageSquare, RotateCcw, SlidersHorizontal } from 'lucide-react';
+import { ChatMessage, DocumentChunk, DocumentItem, RetrievalConfig } from '../types';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import {
-  Send,
-  Sparkles,
-  Bot,
-  User,
-  Sliders,
-  ChevronDown,
-  ChevronUp,
-  FileSearch,
-  ExternalLink,
-  ShieldCheck,
-  Zap,
-  Code,
-  Layers,
-  Copy,
-  Check,
-  RefreshCw,
-} from 'lucide-react';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -37,504 +14,76 @@ interface ChatInterfaceProps {
   documents: DocumentItem[];
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({
-  messages,
-  onSendMessage,
-  isLoading,
-  retrievalConfig,
-  setRetrievalConfig,
-  onOpenViewerWithChunk,
-  onClearChat,
-  documents,
-}) => {
+const suggestions = [
+  { topic: 'Attention Is All You Need', question: 'How does multi-head attention work in a Transformer?' },
+  { topic: 'Retrieval-Augmented Generation', question: 'What is the difference between RAG-Sequence and RAG-Token?' },
+  { topic: 'Dense Vector Embeddings', question: 'How does cosine similarity help find relevant document passages?' },
+];
+
+export function ChatInterface({ messages, onSendMessage, isLoading, retrievalConfig, setRetrievalConfig, onOpenViewerWithChunk, onClearChat, documents }: ChatInterfaceProps) {
   const [inputQuery, setInputQuery] = useState('');
   const [showConfig, setShowConfig] = useState(false);
-  const [expandedPromptMsgId, setExpandedPromptMsgId] = useState<string | null>(null);
-  const [expandedSourcesMsgId, setExpandedSourcesMsgId] = useState<string | null>(null);
+  const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState(false);
+  const streamRef = useRef<HTMLDivElement>(null);
 
-  const sampleQueries = [
-    {
-      uni: 'Deep Learning',
-      label: 'Transformer Attention Math',
-      query: 'Explain the Scaled Dot-Product Attention formula and how Multi-Head Attention projects queries, keys, and values.',
-    },
-    {
-      uni: 'ML Foundations',
-      label: 'Loss & Bias-Variance Tradeoff',
-      query: 'Derive the Bias-Variance Decomposition and explain how AdamW decoupled weight decay optimizes parameter updates.',
-    },
-    {
-      uni: 'Data Science',
-      label: 'PCA Eigendecomposition',
-      query: 'Explain how Principal Component Analysis (PCA) maximizes projected variance using the covariance matrix eigenvalues.',
-    },
-    {
-      uni: 'Vector Search',
-      label: 'Metric Spaces & HNSW Graph Indexing',
-      query: 'How does Cosine Similarity relate to Euclidean distance on unit hyperspheres, and how does HNSW achieve sub-linear ANN search?',
-    },
-    {
-      uni: 'RAG Research',
-      label: 'Lewis et al. Formulations',
-      query: 'Explain the mathematical difference between RAG-Sequence and RAG-Token models according to Lewis et al. 2020.',
-    },
-  ];
+  useEffect(() => {
+    const stream = streamRef.current;
+    if (stream) stream.scrollTop = messages.length || isLoading ? stream.scrollHeight : 0;
+    if (!messages.length) {
+      setInputQuery('');
+      setCopiedId(null);
+      setExpandedPrompt(null);
+    }
+  }, [messages, isLoading]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputQuery.trim() || isLoading) return;
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!inputQuery.trim() || isLoading || !documents.length) return;
     onSendMessage(inputQuery.trim());
     setInputQuery('');
   };
 
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const copyAnswer = async (message: ChatMessage) => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopiedId(message.id);
+      setCopyError(false);
+    } catch {
+      setCopyError(true);
+    }
   };
 
-  return (
-    <div className="flex flex-col h-[740px] bg-ink-900 rounded-2xl border border-ink-800 shadow-2xl overflow-hidden">
-      {/* Header bar */}
-      <div className="px-5 py-3.5 bg-black border-b border-ink-800 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-accent-500/10 border border-accent-500/30 flex items-center justify-center text-accent-400">
-            <FileSearch className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white font-sans">
-              Grounded Document Q&A Agent
-            </h3>
-            <p className="text-[11px] text-ink-400">
-              Retrieval-Augmented Generation with strict provenance & citation verification
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowConfig(!showConfig)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
-              showConfig
-                ? 'bg-accent-950 text-accent-400 border-accent-700'
-                : 'bg-ink-850 text-ink-300 border-ink-800 hover:bg-ink-800'
-            }`}
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>RAG Tuning (Top-K: {retrievalConfig.topK})</span>
-            {showConfig ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-          </button>
-
-          {messages.length > 0 && (
-            <button
-              onClick={onClearChat}
-              className="p-1.5 text-ink-400 hover:text-white hover:bg-ink-800 rounded-lg text-xs"
-              title="Clear Chat History"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* RAG Parameter Tuning Drawer */}
-      {showConfig && (
-        <div className="p-4 bg-ink-950 border-b border-ink-800 text-xs space-y-3 animate-in fade-in duration-200">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <div className="flex justify-between text-ink-300 mb-1">
-                <span>Top-K Retrieved Chunks</span>
-                <span className="font-semibold text-accent-400">{retrievalConfig.topK}</span>
-              </div>
-              <input
-                type="range"
-                min={1}
-                max={8}
-                value={retrievalConfig.topK}
-                onChange={(e) =>
-                  setRetrievalConfig((prev) => ({
-                    ...prev,
-                    topK: parseInt(e.target.value, 10),
-                  }))
-                }
-                className="w-full accent-accent-500"
-              />
-              <span className="text-[10px] text-ink-500">
-                Number of highest-cosine chunks injected into prompt.
-              </span>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-ink-300 mb-1">
-                <span>Hybrid Balance (Dense vs BM25)</span>
-                <span className="font-semibold text-accent-400">
-                  {(retrievalConfig.hybridAlpha * 100).toFixed(0)}% Vector / {((1 - retrievalConfig.hybridAlpha) * 100).toFixed(0)}% BM25
-                </span>
-              </div>
-              <input
-                type="range"
-                min={0.0}
-                max={1.0}
-                step={0.05}
-                value={retrievalConfig.hybridAlpha}
-                onChange={(e) =>
-                  setRetrievalConfig((prev) => ({
-                    ...prev,
-                    hybridAlpha: parseFloat(e.target.value),
-                  }))
-                }
-                className="w-full accent-accent-500"
-              />
-              <span className="text-[10px] text-ink-500">
-                1.0 = Pure Semantic Embeddings, 0.0 = Pure Keyword BM25.
-              </span>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-ink-300 mb-1">
-                <span>Min Cosine Threshold</span>
-                <span className="font-semibold text-accent-400">
-                  {(retrievalConfig.similarityThreshold * 100).toFixed(0)}%
-                </span>
-              </div>
-              <input
-                type="range"
-                min={0.1}
-                max={0.7}
-                step={0.05}
-                value={retrievalConfig.similarityThreshold}
-                onChange={(e) =>
-                  setRetrievalConfig((prev) => ({
-                    ...prev,
-                    similarityThreshold: parseFloat(e.target.value),
-                  }))
-                }
-                className="w-full accent-accent-500"
-              />
-              <span className="text-[10px] text-ink-500">
-                Filters out noisy irrelevant chunks below threshold.
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Message Stream */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-ink-950">
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto py-8">
-            <div className="w-12 h-12 rounded-2xl bg-accent-500/10 border border-accent-500/30 flex items-center justify-center text-accent-400 mb-3 shadow-lg shadow-accent-500/10">
-              <Sparkles className="w-6 h-6" />
-            </div>
-            <h4 className="text-sm font-semibold text-white font-sans">
-              Document Retrieval & Grounded Q&A
-            </h4>
-            <p className="text-xs text-ink-400 mt-1 mb-5 leading-relaxed">
-              Ask questions grounded directly on your uploaded PDFs, technical papers, or research notes.
-            </p>
-
-            {/* Quick Sample Queries */}
-            <div className="w-full space-y-2">
-              <span className="text-[11px] font-semibold text-ink-500 uppercase tracking-wider block mb-1">
-                Suggested Document Analysis Prompts
-              </span>
-              <div className="grid grid-cols-1 gap-1.5 text-left">
-                {sampleQueries.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => onSendMessage(item.query)}
-                    className="p-2.5 rounded-xl bg-ink-900 hover:bg-ink-850 border border-ink-800 hover:border-accent-500/50 text-xs text-ink-300 hover:text-white transition-all flex items-start gap-2.5 group"
-                  >
-                    <span className="px-1.5 py-0.5 rounded bg-accent-950 text-accent-400 border border-accent-800 text-[10px] font-bold">
-                      {item.uni}
-                    </span>
-                    <span className="flex-1 group-hover:translate-x-0.5 transition-transform">
-                      {item.query}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-3 ${
-                msg.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-lg bg-ink-900 border border-ink-800 flex-shrink-0 flex items-center justify-center text-accent-400 mt-0.5 shadow-sm">
-                  <Bot className="w-4 h-4" />
-                </div>
-              )}
-
-              <div
-                className={`max-w-[88%] sm:max-w-[82%] rounded-2xl p-4 text-xs leading-relaxed space-y-3 ${
-                  msg.role === 'user'
-                    ? 'bg-accent-500 text-black font-medium rounded-br-none shadow-md'
-                    : 'bg-ink-900 text-ink-100 border border-ink-800 rounded-bl-none shadow-md'
-                }`}
-              >
-                {/* User Message */}
-                {msg.role === 'user' ? (
-                  <p className="whitespace-pre-wrap text-sm font-semibold">{msg.content}</p>
-                ) : (
-                  <>
-                    {/* Assistant Metadata & Grounding Badges */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-ink-800 text-[11px]">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-accent-400 font-semibold bg-accent-950 px-2 py-0.5 rounded border border-accent-800">
-                          <ShieldCheck className="w-3 h-3" />
-                          {msg.ragMetrics?.overallVerdict || 'Grounded in Sources'}
-                        </span>
-                        {msg.latencyMs && (
-                          <span className="text-ink-400 flex items-center gap-1 font-mono">
-                            <Zap className="w-3 h-3 text-accent-400" />
-                            {msg.latencyMs}ms total
-                          </span>
-                        )}
-                      </div>
-
-                      <button
-                        onClick={() => handleCopy(msg.content, msg.id)}
-                        className="text-ink-400 hover:text-white flex items-center gap-1 text-[11px]"
-                      >
-                        {copiedId === msg.id ? (
-                          <>
-                            <Check className="w-3 h-3 text-accent-400" />
-                            <span className="text-accent-400">Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3" />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Answer Body with Formatted Markdown, LaTeX Math, and Interactive Citations */}
-                    <div className="text-ink-100 font-sans">
-                      <MarkdownRenderer
-                        content={msg.content}
-                        chunks={msg.retrievedChunks || []}
-                        onOpenViewer={onOpenViewerWithChunk}
-                      />
-                    </div>
-
-                    {/* Retrieved Sources Accordion */}
-                    {msg.retrievedChunks && msg.retrievedChunks.length > 0 && (
-                      <div className="pt-2 border-t border-ink-800">
-                        <button
-                          onClick={() =>
-                            setExpandedSourcesMsgId(
-                              expandedSourcesMsgId === msg.id ? null : msg.id
-                            )
-                          }
-                          className="w-full flex items-center justify-between text-[11px] font-medium text-accent-400 hover:text-accent-300 py-1"
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <Layers className="w-3.5 h-3.5" />
-                            <span>
-                              Retrieved Context ({msg.retrievedChunks.length} Top-K Chunks)
-                            </span>
-                          </span>
-                          {expandedSourcesMsgId === msg.id ? (
-                            <ChevronUp className="w-3.5 h-3.5" />
-                          ) : (
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-
-                        {expandedSourcesMsgId === msg.id && (
-                          <div className="mt-2 space-y-2 animate-in fade-in duration-150">
-                            {msg.retrievedChunks.map((res, i) => {
-                              const chunkColor = res.chunk.docColor || '#10b981';
-                              const colorName = res.chunk.docColorName;
-
-                              return (
-                                <div
-                                  key={i}
-                                  className="bg-ink-850 border rounded-xl p-3 space-y-1.5 transition-all"
-                                  style={{
-                                    borderLeftColor: chunkColor,
-                                    borderLeftWidth: '3.5px',
-                                    borderColor: `${chunkColor}30`,
-                                  }}
-                                >
-                                  <div className="flex items-center justify-between text-[10px]">
-                                    <div className="flex flex-wrap items-center gap-1.5">
-                                      <span
-                                        className="px-1.5 py-0.5 rounded font-bold border flex items-center gap-1 font-mono"
-                                        style={{
-                                          color: chunkColor,
-                                          backgroundColor: `${chunkColor}15`,
-                                          borderColor: `${chunkColor}40`,
-                                        }}
-                                      >
-                                        <span
-                                          className="w-1.5 h-1.5 rounded-full inline-block"
-                                          style={{ backgroundColor: chunkColor }}
-                                        />
-                                        Source {i + 1}
-                                        {colorName && <span>&middot; {colorName}</span>}
-                                      </span>
-                                      <span className="font-semibold text-ink-200 truncate max-w-[200px]">
-                                        {res.chunk.docTitle}
-                                      </span>
-                                      <span className="text-ink-500 font-mono">
-                                        #Chunk {res.chunk.chunkIndex + 1}
-                                      </span>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                      <span
-                                        className="font-semibold font-mono"
-                                        style={{ color: chunkColor }}
-                                      >
-                                        {(res.similarity * 100).toFixed(1)}% Cosine
-                                      </span>
-                                      <button
-                                        onClick={() => onOpenViewerWithChunk(res.chunk)}
-                                        className="hover:underline text-[10px] flex items-center gap-0.5"
-                                        style={{ color: chunkColor }}
-                                      >
-                                        Inspect <ExternalLink className="w-2.5 h-2.5" />
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                <p className="text-[11px] text-ink-300 font-mono bg-black p-2 rounded-lg leading-relaxed line-clamp-3 border border-ink-800">
-                                  {res.chunk.text}
-                                </p>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Raw Grounded Prompt Inspector */}
-                    {msg.rawPrompt && (
-                      <div className="pt-1">
-                        <button
-                          onClick={() =>
-                            setExpandedPromptMsgId(
-                              expandedPromptMsgId === msg.id ? null : msg.id
-                            )
-                          }
-                          className="flex items-center gap-1 text-[10px] text-ink-500 hover:text-ink-300 font-mono"
-                        >
-                          <Code className="w-3 h-3" />
-                          <span>
-                            {expandedPromptMsgId === msg.id
-                              ? 'Hide Injected Prompt Payload'
-                              : 'Inspect Injected System & Augmented Prompt'}
-                          </span>
-                        </button>
-
-                        {expandedPromptMsgId === msg.id && (
-                          <div className="mt-2 p-3 bg-black border border-ink-800 rounded-lg text-[10px] font-mono text-ink-300 whitespace-pre-wrap max-h-48 overflow-y-auto">
-                            {msg.rawPrompt}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {msg.role === 'user' && (
-                <div className="w-8 h-8 rounded-lg bg-accent-500 border border-accent-400 flex-shrink-0 flex items-center justify-center text-black font-bold mt-0.5 shadow-sm">
-                  <User className="w-4 h-4" />
-                </div>
-              )}
-            </div>
-          ))
-        )}
-
-        {isLoading && (
-          <div className="flex gap-3 items-start animate-pulse">
-            <div className="w-8 h-8 rounded-lg bg-ink-900 border border-ink-800 flex items-center justify-center text-accent-400">
-              <Bot className="w-4 h-4" />
-            </div>
-            <div className="bg-ink-900 border border-ink-800 rounded-2xl rounded-bl-none p-4 text-xs text-ink-400 space-y-2">
-              <div className="flex items-center gap-2 text-accent-400 font-medium">
-                <div className="w-2 h-2 rounded-full bg-accent-400 animate-ping" />
-                <span>Computing dense vector embeddings & querying cosine index...</span>
-              </div>
-              <p className="text-[11px] text-ink-500">
-                Retrieving Top-{retrievalConfig.topK} relevant passages and synthesizing strictly grounded response.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Input Form */}
-      <div className="p-3 sm:p-4 bg-black border-t border-ink-800">
-        <form onSubmit={handleSubmit} className="relative flex items-center">
-          <input
-            type="text"
-            value={inputQuery}
-            onChange={(e) => setInputQuery(e.target.value)}
-            disabled={isLoading || documents.length === 0}
-            placeholder={
-              documents.length === 0
-                ? 'Upload or index documents above first...'
-                : 'Ask anything about the indexed documents, findings, or methodology...'
-            }
-            className="w-full bg-ink-900 border border-ink-800 rounded-xl pl-4 pr-24 py-3 text-xs sm:text-sm text-ink-100 placeholder-ink-500 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 disabled:opacity-50 transition-colors"
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !inputQuery.trim() || documents.length === 0}
-            className="absolute right-1.5 px-4 py-2 bg-accent-500 hover:bg-accent-400 disabled:bg-ink-800 disabled:text-ink-600 text-black font-semibold text-xs rounded-lg transition-all flex items-center gap-1.5 shadow"
-          >
-            <span>Query</span>
-            <Send className="w-3.5 h-3.5" />
-          </button>
-        </form>
-        <div className="flex items-center justify-between text-[11px] text-ink-500 mt-2 px-1">
-          <span>Press Enter to query with vector search &middot; Real-time Cosine Ranking</span>
-          <span className="text-accent-400">Zero Hallucination Guardrail Active</span>
-        </div>
-      </div>
+  return <section className="conversation-panel notebook-panel" aria-labelledby="conversation-heading">
+    <div className="panel-heading"><h2 id="conversation-heading">Conversation</h2><div className="conversation-actions"><button className={'icon-button' + (showConfig ? ' is-active' : '')} aria-label="Retrieval settings" aria-expanded={showConfig} onClick={() => setShowConfig(!showConfig)}><SlidersHorizontal size={16} /></button><button className="icon-button" aria-label="Clear conversation" disabled={!messages.length || isLoading} onClick={onClearChat}><RotateCcw size={15} /></button></div></div>
+    {showConfig && <div className="retrieval-settings">
+      <div className="settings-title"><strong>Retrieval settings</strong><span>Applied to your next question</span></div>
+      <label htmlFor="retrieval-top-k">Passages per answer<output>{retrievalConfig.topK}</output></label>
+      <input id="retrieval-top-k" type="range" min={1} max={8} value={retrievalConfig.topK} onChange={event => setRetrievalConfig(previous => ({ ...previous, topK: Number(event.target.value) }))} />
+      <label htmlFor="retrieval-balance">Vector / keyword balance<output>{Math.round(retrievalConfig.hybridAlpha * 100)} / {Math.round((1 - retrievalConfig.hybridAlpha) * 100)}</output></label>
+      <input id="retrieval-balance" type="range" min={0} max={1} step={0.05} value={retrievalConfig.hybridAlpha} onChange={event => setRetrievalConfig(previous => ({ ...previous, hybridAlpha: Number(event.target.value) }))} />
+      <label htmlFor="retrieval-threshold">Minimum relevance threshold<output>{Math.round(retrievalConfig.similarityThreshold * 100)}%</output></label>
+      <input id="retrieval-threshold" type="range" min={0.1} max={0.7} step={0.05} value={retrievalConfig.similarityThreshold} onChange={event => setRetrievalConfig(previous => ({ ...previous, similarityThreshold: Number(event.target.value) }))} />
+    </div>}
+    <div className="conversation-stream" ref={streamRef} role="log" aria-label="Research conversation" aria-live="polite" aria-relevant="additions">
+      {!messages.length ? <div className="conversation-empty">
+        <span className="notebook-label"><MessageSquare size={17} strokeWidth={1.5} /> YOUR NOTEBOOK</span>
+        <h2>Ask your sources.</h2>
+        <p>{documents.length ? 'Explore an idea, compare findings, or ask a specific question. Answers draw on the documents in this notebook.' : 'Add a document to the notebook, then ask a question about it.'}</p>
+        <div className="suggested-questions"><h3>Try a question</h3>{suggestions.map(suggestion => <button key={suggestion.topic} disabled={!documents.length || isLoading} onClick={() => onSendMessage(suggestion.question)}><span><small>{suggestion.topic}</small><strong>{suggestion.question}</strong></span><ArrowUpRight size={16} /></button>)}</div>
+        <p className="empty-help">Select a source on the left to read it alongside your conversation.</p>
+      </div> : messages.map(message => <article key={message.id} className={'conversation-message ' + (message.role === 'user' ? 'user-message' : 'assistant-message')}>
+        {message.role === 'user' ? <><div className="message-byline"><strong>You</strong><span>{message.timestamp}</span></div><p>{message.content}</p></> : <>
+          <div className="message-byline"><strong>Grounded</strong><span>{message.modelUsed === 'deterministic-rag-synthesizer' ? 'Local synthesis' : message.modelUsed && message.modelUsed !== 'unknown' ? message.modelUsed : 'Response'}</span>{message.latencyMs !== undefined && <span className="message-latency"><Clock3 size={12} />{message.latencyMs < 1000 ? message.latencyMs + ' ms' : (message.latencyMs / 1000).toFixed(1) + ' s'}</span>}</div>
+          <MarkdownRenderer content={message.content} chunks={message.retrievedChunks || []} onOpenViewer={onOpenViewerWithChunk} />
+          {Boolean(message.retrievedChunks?.length) && <div className="answer-sources"><span>Sources</span>{message.retrievedChunks!.map((result, index) => <button key={result.chunk.id} onClick={() => onOpenViewerWithChunk(result.chunk)} title={result.chunk.docTitle}><span>{index + 1}</span><FileText size={12} /><span>{result.chunk.docTitle}</span></button>)}</div>}
+          <div className="answer-actions"><button onClick={() => copyAnswer(message)}>{copiedId === message.id ? <Check size={14} /> : <Copy size={14} />}{copiedId === message.id ? 'Copied' : 'Copy answer'}</button>{message.rawPrompt && <button aria-expanded={expandedPrompt === message.id} onClick={() => setExpandedPrompt(expandedPrompt === message.id ? null : message.id)}>View prompt<ChevronDown size={13} /></button>}</div>
+          {expandedPrompt === message.id && <pre className="prompt-preview">{message.rawPrompt}</pre>}
+        </>}
+      </article>)}
+      {isLoading && <div className="loading-answer" role="status"><LoaderCircle size={17} className="loading-spinner" /><div><strong>Reading your sources…</strong><p>Finding relevant passages and composing an answer.</p></div></div>}
     </div>
-  );
-};
-
-// Helper: Highlight citation tags in the answer text and make them interactive
-function renderAnswerWithCitationBadges(
-  text: string,
-  chunks: RetrievalResult[],
-  onOpenViewer: (chunk: DocumentChunk) => void
-) {
-  // Split on [Source X] or [Chunk #Y]
-  const regex = /(\[(?:Source\s*\d+|Chunk\s*#?\d+|Doc:[^\]]+)\])/gi;
-  const parts = text.split(regex);
-
-  return parts.map((part, index) => {
-    if (regex.test(part)) {
-      const matchNum = part.match(/\d+/);
-      const sourceNum = matchNum ? parseInt(matchNum[0], 10) : 1;
-      const targetChunk = chunks[sourceNum - 1]?.chunk || chunks[0]?.chunk;
-
-      return (
-        <button
-          key={index}
-          onClick={() => targetChunk && onOpenViewer(targetChunk)}
-          className="inline-flex items-center gap-0.5 mx-0.5 px-1.5 py-0.2 rounded bg-accent-950 hover:bg-accent-900 border border-accent-800 text-accent-400 font-mono text-[10px] font-bold transition-colors cursor-pointer"
-          title={`Click to view Source #${sourceNum} in document viewer`}
-        >
-          {part}
-        </button>
-      );
-    }
-    return <span key={index}>{part}</span>;
-  });
+    <div className="conversation-composer"><form onSubmit={handleSubmit}><label htmlFor="research-question" className="sr-only">Ask a question about your documents</label><textarea id="research-question" rows={3} value={inputQuery} onChange={event => setInputQuery(event.target.value)} disabled={isLoading || !documents.length} placeholder={documents.length ? 'Ask a question about your sources…' : 'Add a source to begin…'} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><div className="composer-toolbar"><span><FileText size={13} />{documents.length} sources<span className="composer-shortcut">Enter to send · Shift + Enter for a new line</span></span><button type="submit" disabled={isLoading || !documents.length || !inputQuery.trim()} aria-label="Send question"><ArrowUp size={18} /></button></div></form><p className="composer-disclaimer" role={copyError ? 'alert' : undefined}>{copyError ? 'Copy failed. You can select the answer text and copy it manually.' : 'Check cited passages for important details. AI-generated answers can be incomplete.'}</p></div>
+  </section>;
 }

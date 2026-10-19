@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 interface DocumentManagerProps {
+  initialTab?: 'list' | 'upload';
   documents: DocumentItem[];
   onAddDocument: (doc: Partial<DocumentItem>) => void;
   onDeleteDocument: (docId: string) => void;
@@ -25,6 +26,7 @@ interface DocumentManagerProps {
 }
 
 export const DocumentManager: React.FC<DocumentManagerProps> = ({
+  initialTab = 'list',
   documents,
   onAddDocument,
   onDeleteDocument,
@@ -33,7 +35,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   setChunkingConfig,
   onOpenViewer,
 }) => {
-  const [activeTab, setActiveTab] = useState<'list' | 'upload' | 'paste' | 'settings'>('list');
+  const [activeTab, setActiveTab] = useState<'list' | 'upload' | 'paste' | 'settings'>(initialTab);
   const [pasteTitle, setPasteTitle] = useState('');
   const [pasteContent, setPasteContent] = useState('');
   const [pasteCategory, setPasteCategory] = useState<'academic' | 'research' | 'user_upload'>('user_upload');

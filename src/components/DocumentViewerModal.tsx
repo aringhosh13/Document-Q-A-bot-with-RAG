@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DocumentItem, DocumentChunk } from '../types';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { getDocumentColor } from '../lib/documentColors';
@@ -21,6 +21,19 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [copied, setCopied] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = window.document.activeElement as HTMLElement | null;
+    const previousOverflow = window.document.body.style.overflow;
+    window.document.body.style.overflow = 'hidden';
+    dialogRef.current?.focus();
+    return () => {
+      window.document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (selectedChunk) {
@@ -49,7 +62,17 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-ink-900 border border-ink-800 rounded-xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="document-viewer-title" tabIndex={-1}
+        onKeyDown={event => {
+          if (event.key === 'Escape') onClose();
+          if (event.key !== 'Tab') return;
+          const focusable = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]), input, [tabindex="0"]'));
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && (window.document.activeElement === first || window.document.activeElement === dialogRef.current)) { event.preventDefault(); last?.focus(); }
+          if (!event.shiftKey && window.document.activeElement === last) { event.preventDefault(); first?.focus(); }
+        }}
+        className="document-dialog bg-ink-900 border border-ink-800 rounded-xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div
           className="px-6 py-4 bg-ink-850 border-b flex items-center justify-between"
@@ -72,7 +95,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-ink-50 truncate max-w-md sm:max-w-xl">
+                <h3 id="document-viewer-title" className="text-sm font-semibold text-ink-50 truncate max-w-md sm:max-w-xl">
                   {document.title}
                 </h3>
                 <span
@@ -107,6 +130,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
             </button>
             <button
               onClick={onClose}
+              aria-label="Close document viewer"
               className="p-1.5 text-ink-400 hover:text-ink-100 hover:bg-ink-800 rounded-md transition-colors"
             >
               <X className="w-5 h-5" />

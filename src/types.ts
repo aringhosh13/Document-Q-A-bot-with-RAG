@@ -68,6 +68,7 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   retrievedChunks?: RetrievalResult[];
+  sourceDocuments?: DocumentItem[];
   citedIndices?: number[];
   latencyMs?: number;
   retrievalLatencyMs?: number;

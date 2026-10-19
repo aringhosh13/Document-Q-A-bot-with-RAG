@@ -12,9 +12,11 @@ import {
   splitTextRecursively,
   generateLocalEmbedding,
   performHybridRetrieval,
-  calculateL2Norm,
 } from './lib/ragEngine';
-import { Header } from './components/Header';
+import { Header, WorkspaceTab } from './components/Header';
+import { KnowledgePanel } from './components/KnowledgePanel';
+import { EvidencePanel } from './components/EvidencePanel';
+import { ChevronRight, Plus } from 'lucide-react';
 import { DocumentManager } from './components/DocumentManager';
 import { ChatInterface } from './components/ChatInterface';
 import { DocumentViewerModal } from './components/DocumentViewerModal';
@@ -22,13 +24,20 @@ import { PipelineVisualizer } from './components/PipelineVisualizer';
 import { VectorSpaceVisualizer } from './components/VectorSpaceVisualizer';
 import { AdmissionsDefense } from './components/AdmissionsDefense';
 import { CodeExporter } from './components/CodeExporter';
-import { Footer } from './components/Footer';
 import { assignColorToDocument, DOCUMENT_PALETTE } from './lib/documentColors';
-import confetti from 'canvas-confetti';
 
 export default function App() {
   // Navigation
-  const [activeTab, setActiveTab] = useState<'chat' | 'pipeline' | 'admissions' | 'code'>('chat');
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('chat');
+
+  const [documentView, setDocumentView] = useState<'list' | 'upload'>('list');
+  const [serviceStatus, setServiceStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+
+  const [selectedEvidence, setSelectedEvidence] = useState<DocumentChunk | null>(null);
+  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
+  const [selectedSnapshot, setSelectedSnapshot] = useState<DocumentItem | null>(null);
+  const [evidenceResults, setEvidenceResults] = useState<RetrievalResult[]>([]);
+  const [mobilePanel, setMobilePanel] = useState<'sources' | 'chat' | 'evidence'>('chat');
 
   // Chunking & Retrieval Configurations
   const [chunkingConfig, setChunkingConfig] = useState<ChunkingConfig>({
@@ -61,12 +70,14 @@ export default function App() {
   // Check health / server connection on mount
   useEffect(() => {
     fetch('/api/health')
-      .then((res) => res.json())
+      .then((res) => { if (!res.ok) throw new Error('Server unavailable'); return res.json(); })
       .then((data) => {
         setIsGeminiConnected(Boolean(data.hasGeminiKey));
+        setServiceStatus('online');
       })
       .catch(() => {
         setIsGeminiConnected(false);
+        setServiceStatus('offline');
       });
   }, []);
 
@@ -114,11 +125,6 @@ export default function App() {
         };
       })
     );
-    confetti({
-      particleCount: 40,
-      spread: 50,
-      origin: { y: 0.5 },
-    });
   }, [chunkingConfig]);
 
   // Add a newly uploaded/pasted document
@@ -167,11 +173,6 @@ export default function App() {
     };
 
     setDocuments((prev) => [fullDoc, ...prev]);
-    confetti({
-      particleCount: 30,
-      spread: 40,
-      origin: { y: 0.4 },
-    });
   };
 
   // Delete a document from vector index
@@ -183,14 +184,6 @@ export default function App() {
   const handleOpenViewer = (doc: DocumentItem) => {
     setViewerDoc(doc);
     setViewerChunk(doc.chunks[0] || null);
-    setIsViewerOpen(true);
-  };
-
-  // Open Viewer directly to a specific retrieved chunk
-  const handleOpenViewerWithChunk = (chunk: DocumentChunk) => {
-    const parentDoc = documents.find((d) => d.id === chunk.docId) || null;
-    setViewerDoc(parentDoc);
-    setViewerChunk(chunk);
     setIsViewerOpen(true);
   };
 
@@ -253,6 +246,7 @@ export default function App() {
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Unable to answer this question');
       const totalLatencyMs = Math.round(performance.now() - startTime);
       const generationLatencyMs = Math.max(1, totalLatencyMs - retrievalLatencyMs);
 
@@ -263,33 +257,24 @@ export default function App() {
         content: data.answer || 'No response synthesized.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         retrievedChunks: retrieved,
+        sourceDocuments: documents.filter(doc => retrieved.some(result => result.chunk.docId === doc.id)),
         citedIndices: data.citedIndices || [1],
         latencyMs: totalLatencyMs,
         retrievalLatencyMs,
         generationLatencyMs,
-        modelUsed: data.modelUsed || 'gemini-3.7-flash',
+        modelUsed: data.modelUsed || 'unknown',
         rawPrompt: data.rawPrompt,
         systemInstruction: data.systemInstruction,
-        ragMetrics: {
-          faithfulnessScore: 0.96,
-          answerRelevanceScore: 0.94,
-          contextPrecisionScore: 0.92,
-          groundingBreakdown: [
-            {
-              claim: 'Direct facts verified in retrieved passages',
-              supported: true,
-              sourceChunk: 1,
-              explanation: 'Exact factual match found in Top-1 chunk.',
-            },
-          ],
-          overallVerdict: 'High Quality Grounded',
-          feedback: 'High factual consistency with source corpus.',
-        },
       };
 
       setMessages((prev) => [...prev, botMsg]);
+      setSelectedEvidence(retrieved[0]?.chunk || null);
+      setSelectedSourceId(retrieved[0]?.chunk.docId || null);
+      setSelectedSnapshot(documents.find(doc => doc.id === retrieved[0]?.chunk.docId) || null);
+      setEvidenceResults(retrieved);
     } catch (error: any) {
       console.error('RAG query error:', error);
+      setEvidenceResults([]);
       const errorMsg: ChatMessage = {
         id: botMessageId,
         role: 'assistant',
@@ -304,6 +289,9 @@ export default function App() {
 
   const handleClearChat = () => {
     setMessages([]);
+    setEvidenceResults([]);
+    setSelectedSnapshot(null);
+    setSelectedEvidence(null);
   };
 
   // Last retrieved results for vector visualizer
@@ -312,135 +300,59 @@ export default function App() {
   const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user');
   const lastQuery = lastUserMsg?.content || '';
 
+  const evidenceDocument = selectedSnapshot || documents.find(doc => doc.id === selectedSourceId)
+    || documents.find(doc => doc.id === lastRetrieved[0]?.chunk.docId)
+    || documents[0] || null;
+  // Answers retain their source snapshot so later indexing cannot rewrite a citation.
+  const evidenceChunk = evidenceDocument?.chunks.find(chunk => chunk.id === selectedEvidence?.id)
+    || evidenceDocument?.chunks[0] || null;
+  const selectEvidence = (chunk: DocumentChunk) => {
+    const answer = messages.find(message => message.retrievedChunks?.some(result => result.chunk === chunk));
+    const source = answer?.sourceDocuments?.find(doc => doc.id === chunk.docId)
+      || (selectedSnapshot?.chunks.includes(chunk) ? selectedSnapshot : null)
+      || documents.find(doc => doc.id === chunk.docId) || null;
+    setSelectedSnapshot(source);
+    if (answer) setEvidenceResults(answer.retrievedChunks || []);
+    setSelectedEvidence(chunk);
+    setSelectedSourceId(chunk.docId);
+    setMobilePanel('evidence');
+  };
+  const openDocuments = (view: 'list' | 'upload') => {
+    setDocumentView(view);
+    setActiveTab('documents');
+  };
+  const pageDetails = {
+    chat: { title: 'Research notebook', description: 'Ask questions across your documents. Read the evidence alongside each answer.' },
+    documents: { title: 'Sources', description: 'Add and inspect the documents available to your notebook.' },
+    pipeline: { title: 'Retrieval lab', description: 'Explore how documents become searchable passages.' },
+    admissions: { title: 'Architecture guide', description: 'The concepts and mechanics behind the retrieval pipeline.' },
+    code: { title: 'Code export', description: 'Implementation examples for your own projects.' },
+  }[activeTab];
+
   return (
-    <div className="min-h-screen bg-black text-ink-100 flex flex-col font-sans selection:bg-accent-500 selection:text-black">
-      {/* Top Navigation */}
-      <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        documentCount={documents.length}
-        chunkCount={allIndexedChunks.length}
-        isGeminiConnected={isGeminiConnected}
-      />
-
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Project Attribution Banner */}
-        <div className="bg-gradient-to-r from-ink-900 via-ink-900 to-accent-950/40 rounded-xl border border-ink-800 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-accent-500/10 border border-accent-500/30 flex items-center justify-center text-accent-400 font-bold text-xs flex-shrink-0">
-              AG
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs sm:text-sm font-bold text-white">
-                  Developed by Arin Ghosh &middot; Christ Academy ICSE School
-                </span>
-                <span className="text-[10px] font-semibold bg-accent-950 text-accent-300 border border-accent-700 px-2 py-0.5 rounded-full">
-                  Built with AI Assistance
-                </span>
-                <span className="text-[10px] font-semibold bg-ink-950 text-ink-300 border border-ink-700 px-2 py-0.5 rounded-full">
-                  86.7% Citation Accuracy (26/30)
-                </span>
-              </div>
-              <p className="text-[11px] text-ink-300 mt-0.5">
-                Algorithmic RAG Engine with Linear Algebra Vector Projections & BM25 Hybrid Retrieval
-              </p>
-            </div>
+    <div className="workspace-shell">
+      <Header activeTab={activeTab} setActiveTab={tab => { if (tab === 'documents') setDocumentView('list'); setActiveTab(tab); }} documentCount={documents.length} isGeminiConnected={isGeminiConnected} isBusy={isLoading}
+        onNewChat={() => { if (!isLoading) { handleClearChat(); setActiveTab('chat'); setMobilePanel('chat'); } }} />
+      <main id="main-content" className="workspace-content">
+        <div className="notebook-breadcrumb"><span>Workspace</span><ChevronRight size={12} /><span>Document Q&A</span></div>
+        <section className="notebook-heading"><div><h1>{pageDetails.title}</h1><p>{pageDetails.description}</p></div><button className="button button-primary" onClick={() => openDocuments('upload')}><Plus size={16} />Add documents</button></section>
+        {activeTab === 'chat' && <>
+          <div className="mobile-panel-switcher" aria-label="Notebook panels">{(['sources', 'chat', 'evidence'] as const).map(panel => <button key={panel} aria-pressed={mobilePanel === panel} onClick={() => setMobilePanel(panel)}>{panel === 'sources' ? 'Sources (' + documents.length + ')' : panel === 'chat' ? 'Conversation' : 'Evidence'}</button>)}</div>
+          <div className="research-grid" data-mobile-panel={mobilePanel}>
+            <KnowledgePanel documents={documents} selectedDocumentId={evidenceDocument?.id} onSelectDocument={doc => { setSelectedSnapshot(null); setSelectedSourceId(doc.id); setSelectedEvidence(doc.chunks[0] || null); setMobilePanel('evidence'); }} onAddDocuments={() => openDocuments('upload')} onManageDocuments={() => openDocuments('list')} />
+            <ChatInterface messages={messages} onSendMessage={handleSendMessage} isLoading={isLoading} retrievalConfig={retrievalConfig} setRetrievalConfig={setRetrievalConfig} onOpenViewerWithChunk={selectEvidence} onClearChat={handleClearChat} documents={documents} />
+            <EvidencePanel document={evidenceDocument} chunk={evidenceChunk} results={evidenceResults} hasQuery={Boolean(lastBotMsg?.retrievedChunks)} isHistorical={Boolean(selectedSnapshot && documents.find(doc => doc.id === selectedSnapshot.id) !== selectedSnapshot)} onSelectChunk={selectEvidence} onOpenDocument={doc => { setViewerDoc(doc); setViewerChunk(evidenceChunk); setIsViewerOpen(true); }} />
           </div>
+        </>}
+        <div className="legacy-surface">
+          {activeTab === 'documents' && <DocumentManager key={documentView} initialTab={documentView} documents={documents} onAddDocument={handleAddDocument} onDeleteDocument={handleDeleteDocument} onSelectDocument={handleOpenViewer} onRechunkAll={handleRechunkAll} chunkingConfig={chunkingConfig} setChunkingConfig={setChunkingConfig} onOpenViewer={handleOpenViewer} />}
+          {activeTab === 'pipeline' && <div className="space-y-6"><PipelineVisualizer docCount={documents.length} chunkCount={allIndexedChunks.length} /><VectorSpaceVisualizer allChunks={allIndexedChunks} lastQuery={lastQuery} lastRetrievedResults={lastRetrieved} /></div>}
+          {activeTab === 'admissions' && <AdmissionsDefense />}
+          {activeTab === 'code' && <CodeExporter />}
         </div>
-
-        {/* VIEW 1: Live Document Q&A Bot */}
-        {activeTab === 'chat' && (
-          <div className="space-y-6">
-            {/* Knowledge Base Ingestion Bar */}
-            <DocumentManager
-              documents={documents}
-              onAddDocument={handleAddDocument}
-              onDeleteDocument={handleDeleteDocument}
-              onSelectDocument={handleOpenViewer}
-              onRechunkAll={handleRechunkAll}
-              chunkingConfig={chunkingConfig}
-              setChunkingConfig={setChunkingConfig}
-              onOpenViewer={handleOpenViewer}
-            />
-
-            {/* Q&A Chatbot + Vector Projection Split */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left Column: Chat Conversation (7 cols) */}
-              <div className="lg:col-span-7">
-                <ChatInterface
-                  messages={messages}
-                  onSendMessage={handleSendMessage}
-                  isLoading={isLoading}
-                  retrievalConfig={retrievalConfig}
-                  setRetrievalConfig={setRetrievalConfig}
-                  onOpenViewerWithChunk={handleOpenViewerWithChunk}
-                  onClearChat={handleClearChat}
-                  documents={documents}
-                />
-              </div>
-
-              {/* Right Column: 2D Vector Space Visualizer & Live Stats (5 cols) */}
-              <div className="lg:col-span-5 space-y-6">
-                <VectorSpaceVisualizer
-                  allChunks={allIndexedChunks}
-                  lastQuery={lastQuery}
-                  lastRetrievedResults={lastRetrieved}
-                />
-
-                {/* Technical Overview Mini-Card */}
-                <div className="p-4 bg-ink-900 rounded-xl border border-ink-800 space-y-2 text-xs text-ink-300">
-                  <div className="text-white font-bold flex items-center justify-between">
-                    <span>Active Retrieval Architecture</span>
-                    <span className="font-mono text-accent-400 text-[11px] bg-accent-950 px-2 py-0.5 rounded border border-accent-800">Hybrid RRF</span>
-                  </div>
-                  <p className="text-[12px] leading-relaxed text-ink-300">
-                    Uses <strong className="text-white">Dense Cosine Similarity</strong> (256-D unit hypersphere) combined with <strong className="text-white">BM25 Sparse Inverted Index</strong>. Formulated with strict provenance tracking to eliminate hallucinations.
-                  </p>
-                  <div className="pt-1 text-[11px] text-ink-400 border-t border-ink-800">
-                    Author: <strong className="text-ink-200">Arin Ghosh</strong>, Christ Academy ICSE School
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 2: Pipeline Lab */}
-        {activeTab === 'pipeline' && (
-          <div className="space-y-6">
-            <PipelineVisualizer
-              docCount={documents.length}
-              chunkCount={allIndexedChunks.length}
-            />
-
-            <VectorSpaceVisualizer
-              allChunks={allIndexedChunks}
-              lastQuery={lastQuery || 'Retrieval mechanisms and dense vector embeddings'}
-              lastRetrievedResults={lastRetrieved}
-            />
-          </div>
-        )}
-
-        {/* VIEW 3: Technical Defense & Architecture Kit */}
-        {activeTab === 'admissions' && <AdmissionsDefense />}
-
-        {/* VIEW 4: Source Code Exporter */}
-        {activeTab === 'code' && <CodeExporter />}
+        <footer className="notebook-footer"><span><span className={'connection-dot ' + (serviceStatus === 'online' ? '' : 'connection-muted')} />{serviceStatus === 'checking' ? 'Connecting' : serviceStatus === 'online' ? 'Connected' : 'Server unavailable'}<span className="footer-divider">/</span>{documents.length} sources<span className="footer-divider">/</span>{allIndexedChunks.length} indexed passages</span><span>Built by Arin Ghosh · In-memory session</span></footer>
       </main>
-
-      {/* Full Document & Chunk Inspector Modal */}
-      <DocumentViewerModal
-        isOpen={isViewerOpen}
-        onClose={() => setIsViewerOpen(false)}
-        document={viewerDoc}
-        selectedChunk={viewerChunk}
-        onSelectChunk={(c) => setViewerChunk(c)}
-      />
-
-      {/* Footer mentioning each uploaded file and its distinct assigned color code */}
-      <Footer documents={documents} onOpenViewer={handleOpenViewer} />
+      <DocumentViewerModal isOpen={isViewerOpen} onClose={() => setIsViewerOpen(false)} document={viewerDoc} selectedChunk={viewerChunk} onSelectChunk={setViewerChunk} />
     </div>
   );
 }
