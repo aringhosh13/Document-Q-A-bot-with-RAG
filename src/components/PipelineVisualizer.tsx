@@ -177,7 +177,7 @@ const response = await ai.models.generateContent({
       <div className="bg-ink-900 rounded-xl border border-ink-800 p-5 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-ink-800">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2 font-sans">
+            <h2 className="text-base font-bold text-ink-50 flex items-center gap-2 font-sans">
               <Code2 className="w-5 h-5 text-accent-400" />
               RAG Architecture Pipeline & Mechanics
             </h2>
@@ -205,14 +205,14 @@ const response = await ai.models.generateContent({
                 className={`p-3 rounded-lg border text-left transition-all flex flex-col justify-between ${
                   isSelected
                     ? 'bg-accent-950 border-accent-500 shadow-md ring-1 ring-accent-500/40'
-                    : 'bg-black border-ink-800 hover:border-ink-700 hover:bg-ink-850'
+                    : 'bg-ink-950 border-ink-800 hover:border-ink-700 hover:bg-ink-850'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                       isSelected
-                        ? 'bg-accent-500 text-black font-bold'
+                        ? 'bg-accent-900 text-ink-50 font-bold'
                         : 'bg-ink-800 text-ink-400'
                     }`}
                   >
@@ -230,7 +230,7 @@ const response = await ai.models.generateContent({
                 <div className="mt-3">
                   <div
                     className={`text-xs font-bold leading-tight ${
-                      isSelected ? 'text-white' : 'text-ink-300'
+                      isSelected ? 'text-ink-50' : 'text-ink-300'
                     }`}
                   >
                     {step.title.split('. ')[1]}
@@ -258,7 +258,7 @@ const response = await ai.models.generateContent({
             </span>
           </div>
 
-          <h3 className="text-lg font-bold text-white font-sans">{currentStep.title}: {currentStep.subtitle}</h3>
+          <h3 className="text-lg font-bold text-ink-50 font-sans">{currentStep.title}: {currentStep.subtitle}</h3>
 
           <p className="text-xs sm:text-sm text-ink-300 leading-relaxed">
             {currentStep.description}
@@ -266,7 +266,7 @@ const response = await ai.models.generateContent({
 
           {/* Mathematical formulation card */}
           {currentStep.mathNote && (
-            <div className="p-3.5 bg-black border border-ink-800 rounded-lg space-y-1">
+            <div className="p-3.5 bg-ink-950 border border-ink-800 rounded-lg space-y-1">
               <div className="text-[10px] font-bold font-mono uppercase text-ink-400 tracking-wider">
                 Mathematical Formalism
               </div>
@@ -303,7 +303,7 @@ const response = await ai.models.generateContent({
             <button
               disabled={activeStep === steps.length}
               onClick={() => setActiveStep(activeStep + 1)}
-              className="px-4 py-1.5 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-40 text-xs text-white font-medium transition-all flex items-center gap-1 shadow"
+              className="px-4 py-1.5 rounded-lg bg-accent-900 hover:bg-accent-900 disabled:opacity-40 text-xs text-ink-50 font-medium transition-all flex items-center gap-1 shadow"
             >
               <span>Next Stage</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -312,7 +312,7 @@ const response = await ai.models.generateContent({
         </div>
 
         {/* Right Column: Code Snippet (5 cols) */}
-        <div className="lg:col-span-5 bg-black border border-ink-800 rounded-xl p-4 flex flex-col justify-between space-y-3">
+        <div className="lg:col-span-5 bg-ink-950 border border-ink-800 rounded-xl p-4 flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between pb-2 border-b border-ink-800">
             <div className="flex items-center gap-2 text-xs font-mono text-ink-400">
               <Code2 className="w-3.5 h-3.5 text-accent-400" />

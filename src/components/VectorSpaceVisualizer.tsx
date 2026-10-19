@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { DocumentChunk, RetrievalResult } from '../types';
 import { projectVectorsTo2D, cosineSimilarity, generateLocalEmbedding } from '../lib/ragEngine';
-import { DOCUMENT_PALETTE } from '../lib/documentColors';
+import { DOCUMENT_THEME } from '../lib/documentColors';
 import { Compass, Search, Filter, Sparkles, Layers, RefreshCw } from 'lucide-react';
 
 interface VectorSpaceVisualizerProps {
@@ -21,128 +21,17 @@ export interface ColorTheme {
   hex: string;
 }
 
-export const COLOR_PALETTE: ColorTheme[] = [
-  {
-    id: 'rag',
-    label: 'RAG Foundations (Lewis et al.)',
-    dotBg: 'bg-purple-500',
-    ringColor: 'ring-purple-400/50',
-    badgeBg: 'bg-purple-950/60',
-    textColor: 'text-purple-300',
-    border: 'border-purple-500/30',
-    hex: '#a855f7',
-  },
-  {
-    id: 'transformers',
-    label: 'Transformers & Attention (Vaswani et al.)',
-    dotBg: 'bg-emerald-500',
-    ringColor: 'ring-emerald-400/50',
-    badgeBg: 'bg-emerald-950/60',
-    textColor: 'text-emerald-300',
-    border: 'border-emerald-500/30',
-    hex: '#10b981',
-  },
-  {
-    id: 'ml',
-    label: 'ML Foundations & Optimization (AdamW)',
-    dotBg: 'bg-orange-500',
-    ringColor: 'ring-orange-400/50',
-    badgeBg: 'bg-orange-950/60',
-    textColor: 'text-orange-300',
-    border: 'border-orange-500/30',
-    hex: '#f97316',
-  },
-  {
-    id: 'ds',
-    label: 'Statistics & PCA (Data Science)',
-    dotBg: 'bg-blue-500',
-    ringColor: 'ring-blue-400/50',
-    badgeBg: 'bg-blue-950/60',
-    textColor: 'text-blue-300',
-    border: 'border-blue-500/30',
-    hex: '#3b82f6',
-  },
-  {
-    id: 'vectors',
-    label: 'Dense Vector Search & HNSW Indexing',
-    dotBg: 'bg-cyan-500',
-    ringColor: 'ring-cyan-400/50',
-    badgeBg: 'bg-cyan-950/60',
-    textColor: 'text-cyan-300',
-    border: 'border-cyan-500/30',
-    hex: '#06b6d4',
-  },
-  {
-    id: 'custom-1',
-    label: 'Custom Documents (Set A)',
-    dotBg: 'bg-rose-500',
-    ringColor: 'ring-rose-400/50',
-    badgeBg: 'bg-rose-950/60',
-    textColor: 'text-rose-300',
-    border: 'border-rose-500/30',
-    hex: '#f43f5e',
-  },
-  {
-    id: 'custom-2',
-    label: 'Custom Documents (Set B)',
-    dotBg: 'bg-indigo-500',
-    ringColor: 'ring-indigo-400/50',
-    badgeBg: 'bg-indigo-950/60',
-    textColor: 'text-indigo-300',
-    border: 'border-indigo-500/30',
-    hex: '#6366f1',
-  },
-];
-
-// Helper to determine or assign color style based on document title / ID
-export function getChunkColorStyle(chunk: DocumentChunk, allDocTitles: string[]): ColorTheme {
-  if (chunk.docColor) {
-    const pal = DOCUMENT_PALETTE.find((p) => p.hex.toLowerCase() === chunk.docColor?.toLowerCase());
-    if (pal) {
-      return {
-        id: pal.id,
-        label: chunk.docTitle || pal.name,
-        dotBg: pal.dot,
-        ringColor: pal.ring,
-        badgeBg: pal.badgeBg,
-        textColor: pal.textColor,
-        border: pal.border,
-        hex: pal.hex,
-      };
-    }
-  }
-
-  const t = (chunk.docTitle || '').toLowerCase();
-  
-  if (t.includes('lewis') || t.includes('retrieval-augmented') || t.includes('rag')) {
-    return COLOR_PALETTE[0];
-  }
-  if (t.includes('transformer') || t.includes('attention') || t.includes('vaswani') || t.includes('deep learning')) {
-    return COLOR_PALETTE[1];
-  }
-  if (t.includes('machine learning') || t.includes('optimization') || t.includes('loss') || t.includes('adamw')) {
-    return COLOR_PALETTE[2];
-  }
-  if (t.includes('data science') || t.includes('pca') || t.includes('statistics') || t.includes('svd')) {
-    return COLOR_PALETTE[3];
-  }
-  if (t.includes('hnsw') || t.includes('faiss') || t.includes('vector search') || t.includes('nlp') || t.includes('metric')) {
-    return COLOR_PALETTE[4];
-  }
-
-  // Fallback hashing for uploaded / custom documents
-  const docIdx = allDocTitles.indexOf(chunk.docTitle);
-  const paletteIdx = docIdx >= 0 ? docIdx % DOCUMENT_PALETTE.length : 0;
-  const pal = DOCUMENT_PALETTE[paletteIdx];
+// Keep document identities separate so legend filters work with one shared accent.
+export function getChunkColorStyle(chunk: DocumentChunk): ColorTheme {
   return {
-    id: pal.id,
-    label: chunk.docTitle || pal.name,
-    dotBg: pal.dot,
-    ringColor: pal.ring,
-    badgeBg: pal.badgeBg,
-    textColor: pal.textColor,
-    border: pal.border,
-    hex: pal.hex,
+    id: chunk.docId,
+    label: chunk.docTitle,
+    dotBg: DOCUMENT_THEME.dot,
+    ringColor: DOCUMENT_THEME.ring,
+    badgeBg: DOCUMENT_THEME.badgeBg,
+    textColor: DOCUMENT_THEME.textColor,
+    border: DOCUMENT_THEME.border,
+    hex: DOCUMENT_THEME.hex,
   };
 }
 
@@ -171,11 +60,6 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
     }
   }, [lastQuery]);
 
-  // Unique document titles for consistent color hashing
-  const uniqueDocTitles = useMemo(() => {
-    return Array.from(new Set(allChunks.map((c) => c.docTitle)));
-  }, [allChunks]);
-
   // Dimensionality reduction: 256-D -> 2D
   const { chunkCoords, queryCoord, queryVec } = useMemo(() => {
     if (allChunks.length === 0) {
@@ -197,12 +81,12 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
     return new Set(lastRetrievedResults.map((r) => r.chunk.id));
   }, [lastRetrievedResults]);
 
-  // Group chunks by color style for legend counters
+  // Group by document identity for the filter legend.
   const categoryStats = useMemo(() => {
     const map = new Map<string, { theme: ColorTheme; count: number; docTitles: Set<string> }>();
     
     for (const chunk of allChunks) {
-      const theme = getChunkColorStyle(chunk, uniqueDocTitles);
+      const theme = getChunkColorStyle(chunk);
       if (!map.has(theme.id)) {
         map.set(theme.id, { theme, count: 0, docTitles: new Set() });
       }
@@ -212,7 +96,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
     }
 
     return Array.from(map.values());
-  }, [allChunks, uniqueDocTitles]);
+  }, [allChunks]);
 
   return (
     <div className="bg-ink-900 rounded-xl border border-ink-800 p-4 sm:p-5 space-y-4 shadow-xl">
@@ -221,12 +105,12 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <Compass className="w-4 h-4 text-accent-400" />
-            <h3 className="text-sm font-semibold text-white font-sans">
+            <h3 className="text-sm font-semibold text-ink-50 font-sans">
               2D Vector Space Projection & Semantic Manifold
             </h3>
           </div>
           <p className="text-xs text-ink-400 mt-0.5">
-            PCA projection from 256-D embedding hypersphere &middot; Color-coded by topic cluster
+            PCA projection from 256-D embeddings &middot; Filter by source document
           </p>
         </div>
 
@@ -238,7 +122,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
               value={testQuery}
               onChange={(e) => setTestQuery(e.target.value)}
               placeholder="Test query position..."
-              className="bg-black border border-ink-800 rounded-lg pl-7 pr-3 py-1.5 text-xs text-ink-100 placeholder-ink-600 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 w-56 sm:w-64 transition-colors"
+              className="bg-ink-950 border border-ink-800 rounded-lg pl-7 pr-3 py-1.5 text-xs text-ink-100 placeholder-ink-600 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 w-56 sm:w-64 transition-colors"
             />
             <Search className="w-3.5 h-3.5 text-ink-500 absolute left-2.5 top-2.5" />
           </div>
@@ -257,9 +141,9 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
       </div>
 
       {/* Projection Canvas */}
-      <div className="relative w-full h-[400px] bg-black rounded-lg border border-ink-800 overflow-hidden select-none">
+      <div className="relative w-full h-[400px] bg-ink-950 rounded-lg border border-ink-800 overflow-hidden select-none">
         {/* Background Coordinate Grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#17191e_1px,transparent_1px),linear-gradient(to_bottom,#17191e_1px,transparent_1px)] bg-[size:24px_24px]" />
+        <div className="absolute inset-0 vector-coordinate-grid bg-[size:24px_24px]" />
         
         {/* Radial Hypersphere Cross-Sections */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -286,7 +170,6 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
             if (!chunk) return null;
             if (!topRetrievedChunkIds.has(chunk.id)) return null;
             
-            const theme = getChunkColorStyle(chunk, uniqueDocTitles);
             return (
               <g key={`line-group-${chunk.id}`}>
                 <line
@@ -294,7 +177,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
                   y1={`${queryCoord.y}%`}
                   x2={`${coord.x}%`}
                   y2={`${coord.y}%`}
-                  stroke="#f59e0b"
+                  stroke={DOCUMENT_THEME.hex}
                   strokeWidth="2"
                   strokeDasharray="4 4"
                   strokeOpacity="0.8"
@@ -304,7 +187,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
                   cy={`${coord.y}%`}
                   r="12"
                   fill="none"
-                  stroke="#f59e0b"
+                  stroke={DOCUMENT_THEME.hex}
                   strokeWidth="1.5"
                   strokeOpacity="0.5"
                   className="animate-ping"
@@ -320,7 +203,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
           if (!chunk) return null;
 
           const isRetrieved = topRetrievedChunkIds.has(chunk.id);
-          const style = getChunkColorStyle(chunk, uniqueDocTitles);
+          const style = getChunkColorStyle(chunk);
           const chunkVec = chunk.vector || generateLocalEmbedding(chunk.text);
           const similarity = queryVec.length > 0 ? cosineSimilarity(queryVec, chunkVec) : 0;
 
@@ -342,12 +225,12 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
               }}
               className={`absolute -ml-2 -mt-2 rounded-full cursor-pointer transition-all duration-200 ${
                 isRetrieved
-                  ? `w-4 h-4 z-20 ${style.dotBg} ring-4 ring-amber-400 shadow-lg shadow-amber-500/50 scale-125`
+                  ? `w-4 h-4 z-20 ${style.dotBg} ring-4 ring-accent-500 shadow-lg shadow-accent-500/50 scale-125`
                   : isHighlighted
-                  ? `w-4 h-4 z-20 ${style.dotBg} ring-4 ring-white/60 shadow-lg shadow-white/20 scale-125`
+                  ? `w-4 h-4 z-20 ${style.dotBg} ring-4 ring-accent-500/30 shadow-lg shadow-accent-500/10 scale-125`
                   : isDimmed
-                  ? `w-3 h-3 z-0 ${style.dotBg} opacity-20 border border-black/40`
-                  : `w-3.5 h-3.5 z-10 ${style.dotBg} border border-black/60 hover:scale-135 hover:ring-2 hover:ring-white/80`
+                  ? `w-3 h-3 z-0 ${style.dotBg} opacity-20 border border-ink-700`
+                  : `w-3.5 h-3.5 z-10 ${style.dotBg} border border-accent-800 hover:scale-135 hover:ring-2 hover:ring-accent-500/30`
               }`}
             />
           );
@@ -356,7 +239,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
         {/* Query Node (Q) */}
         <div
           style={{ left: `${queryCoord.x}%`, top: `${queryCoord.y}%` }}
-          className="absolute w-6 h-6 -ml-3 -mt-3 rounded-full bg-white text-black ring-4 ring-amber-400 shadow-xl shadow-amber-500/40 flex items-center justify-center font-black text-[10px] z-30 animate-pulse cursor-pointer border border-black"
+          className="absolute w-6 h-6 -ml-3 -mt-3 rounded-full bg-accent-950 text-accent-400 ring-4 ring-accent-500 shadow-xl shadow-accent-500/40 flex items-center justify-center font-black text-[10px] z-30 animate-pulse cursor-pointer border border-accent-800"
           title={`Active Query: "${testQuery}"`}
         >
           Q
@@ -369,7 +252,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
               left: `${Math.min(78, Math.max(12, hoveredChunk.x))}%`,
               top: `${Math.min(70, Math.max(10, hoveredChunk.y - 10))}%`,
             }}
-            className="absolute z-40 pointer-events-none -translate-x-1/2 -translate-y-full w-72 bg-black/95 backdrop-blur border border-ink-700 rounded-xl p-3.5 shadow-2xl space-y-2 text-xs animate-fade-in"
+            className="absolute z-40 pointer-events-none -translate-x-1/2 -translate-y-full w-72 bg-ink-950/95 backdrop-blur border border-ink-700 rounded-xl p-3.5 shadow-2xl space-y-2 text-xs animate-fade-in"
           >
             {/* Header with Category Badge & Similarity */}
             <div className="flex items-center justify-between gap-2">
@@ -380,13 +263,13 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
                 <span className="truncate max-w-[130px]">{hoveredChunk.style.label.split(' (')[0]}</span>
               </span>
 
-              <span className="font-mono text-amber-400 font-bold text-xs bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/50">
+              <span className="font-mono text-accent-400 font-bold text-xs bg-accent-950/60 px-2 py-0.5 rounded border border-accent-800/50">
                 {((hoveredChunk.dist || 0) * 100).toFixed(1)}% Cosine
               </span>
             </div>
 
             {/* Document Title */}
-            <div className="text-[11px] font-semibold text-white leading-tight">
+            <div className="text-[11px] font-semibold text-ink-50 leading-tight">
               {hoveredChunk.chunk.docTitle}
             </div>
 
@@ -409,7 +292,7 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
         <div className="flex items-center justify-between text-xs">
           <span className="text-ink-400 font-medium flex items-center gap-1.5">
             <Layers className="w-3.5 h-3.5 text-accent-400" />
-            <span>Interactive Cluster Legend (Click to filter):</span>
+            <span>Source documents (click to filter):</span>
           </span>
 
           <span className="text-[11px] font-mono text-accent-400 bg-accent-950 px-2 py-0.5 rounded border border-accent-800">
@@ -419,20 +302,20 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
 
         {/* System Node Markers */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="flex items-center gap-1.5 bg-black px-2.5 py-1 rounded-lg border border-ink-800">
-            <span className="w-3 h-3 rounded-full bg-white text-black font-black text-[8px] flex items-center justify-center ring-2 ring-amber-400">
+          <div className="flex items-center gap-1.5 bg-ink-950 px-2.5 py-1 rounded-lg border border-ink-800">
+            <span className="w-3 h-3 rounded-full bg-accent-950 text-accent-400 font-black text-[8px] flex items-center justify-center ring-2 ring-accent-500">
               Q
             </span>
             <span className="text-ink-200 text-xs font-medium">Active Query Position (Q)</span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-black px-2.5 py-1 rounded-lg border border-amber-800/40 text-amber-300">
-            <span className="w-3 h-3 rounded-full bg-amber-400 ring-2 ring-amber-500/50" />
+          <div className="flex items-center gap-1.5 bg-ink-950 px-2.5 py-1 rounded-lg border border-accent-800/40 text-accent-400">
+            <span className="w-3 h-3 rounded-full bg-accent-500 ring-2 ring-accent-500/50" />
             <span className="text-xs font-medium">Top-K Retrieved Passages ({topRetrievedChunkIds.size})</span>
           </div>
         </div>
 
-        {/* Topic Cluster Color Badges */}
+        {/* Source document filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {categoryStats.map(({ theme, count }) => {
             const isSelected = selectedCategoryFilter === theme.id;
@@ -444,13 +327,13 @@ export const VectorSpaceVisualizer: React.FC<VectorSpaceVisualizerProps> = ({
                 }
                 className={`p-2 rounded-lg border text-left transition-all flex items-center justify-between gap-2 text-xs ${
                   isSelected
-                    ? `${theme.badgeBg} ${theme.border} ring-1 ring-white/50 shadow-md`
-                    : 'bg-black border-ink-800 hover:border-ink-700 hover:bg-ink-850'
+                    ? `${theme.badgeBg} ${theme.border} ring-1 ring-accent-500/30 shadow-md`
+                    : 'bg-ink-950 border-ink-800 hover:border-ink-700 hover:bg-ink-850'
                 }`}
               >
                 <div className="flex items-center gap-2 truncate">
                   <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${theme.dotBg}`} />
-                  <span className={`truncate font-medium ${isSelected ? 'text-white' : 'text-ink-300'}`}>
+                  <span className={`truncate font-medium ${isSelected ? 'text-ink-50' : 'text-ink-300'}`}>
                     {theme.label.split(' (')[0]}
                   </span>
                 </div>

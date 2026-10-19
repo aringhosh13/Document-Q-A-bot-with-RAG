@@ -206,10 +206,6 @@ input[type="range"]::-moz-range-thumb { border: 0; width: 12px; height: 12px; bo
 .evidence-excerpt .markdown-body :is(h3,h4) { font-size: 13px; }
 .katex { font-size: 1.05em; color: inherit; text-rendering: auto; }
 .katex-display { overflow-x: auto; overflow-y: hidden; padding: 6px 0; margin: 10px 0; }
-.legacy-surface .text-white, .document-dialog .text-white { color: #36492c; }
-.legacy-surface .bg-black, .document-dialog .bg-black { background: #f7f9f3; }
-.legacy-surface .bg-accent-600, .legacy-surface .bg-accent-500 { background: #e0ecd6; color: #42652c; }
-.legacy-surface .hover\:text-white:hover { color: #4f7437; }
 .legacy-surface { padding-top: 0; }
 .legacy-surface > :first-child { margin-top: 0; }
 @keyframes fade-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
@@ -300,3 +296,6 @@ input[type="range"]::-moz-range-thumb { border: 0; width: 12px; height: 12px; bo
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* The retrieval plot uses the same light surfaces and accent as the notebook. */
+.vector-coordinate-grid { background-image: linear-gradient(to right, var(--line) 1px, transparent 1px), linear-gradient(to bottom, var(--line) 1px, transparent 1px); }

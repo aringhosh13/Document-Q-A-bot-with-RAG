@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DocumentItem, DocumentChunk } from '../types';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { getDocumentColor } from '../lib/documentColors';
-import { X, FileText, Layers, Search, BookOpen, CircleCheck as CheckCircle, Copy, Palette } from 'lucide-react';
+import { X, FileText, Layers, Search, BookOpen, CircleCheck as CheckCircle, Copy } from 'lucide-react';
 
 interface DocumentViewerModalProps {
   isOpen: boolean;
@@ -46,7 +45,6 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
 
   if (!isOpen || !document) return null;
 
-  const color = getDocumentColor(document);
 
   const filteredChunks = (document.chunks || []).filter(
     (c) =>
@@ -76,20 +74,10 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
         {/* Header */}
         <div
           className="px-6 py-4 bg-ink-850 border-b flex items-center justify-between"
-          style={{
-            borderLeftColor: color.hex,
-            borderLeftWidth: '4px',
-            borderColor: `${color.hex}25`,
-          }}
         >
           <div className="flex items-center gap-3">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center border"
-              style={{
-                backgroundColor: `${color.hex}15`,
-                borderColor: `${color.hex}30`,
-                color: color.hex,
-              }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center border border-accent-800 bg-accent-950 text-accent-400"
             >
               <FileText className="w-4 h-4" />
             </div>
@@ -98,17 +86,6 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
                 <h3 id="document-viewer-title" className="text-sm font-semibold text-ink-50 truncate max-w-md sm:max-w-xl">
                   {document.title}
                 </h3>
-                <span
-                  className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border inline-flex items-center gap-1.5"
-                  style={{
-                    color: color.hex,
-                    backgroundColor: `${color.hex}15`,
-                    borderColor: `${color.hex}35`,
-                  }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: color.hex }} />
-                  {color.name} &middot; {color.hex}
-                </span>
               </div>
               <p className="text-xs text-ink-500 flex items-center gap-2 mt-0.5">
                 <span className="text-ink-300 font-medium">{document.institution || 'Document'}</span>
@@ -125,7 +102,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
               onClick={handleCopyDoc}
               className="px-3 py-1.5 bg-ink-800 hover:bg-ink-700 text-ink-300 rounded-md text-xs font-medium transition-all flex items-center gap-1.5"
             >
-              {copied ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <CheckCircle className="w-3.5 h-3.5 text-accent-400" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? 'Copied' : 'Copy'}</span>
             </button>
             <button
@@ -209,7 +186,7 @@ export const DocumentViewerModal: React.FC<DocumentViewerModalProps> = ({
                     {isSelected && (
                       <div className="mt-2 pt-2 border-t border-accent-500/20 flex items-center justify-between text-[10px] text-accent-300">
                         <span>256-D vector</span>
-                        <span className="font-mono text-emerald-400">L2 norm: 1.000</span>
+                        <span className="font-mono text-accent-400">L2 norm: 1.000</span>
                       </div>
                     )}
                   </div>

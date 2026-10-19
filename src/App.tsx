@@ -24,7 +24,7 @@ import { PipelineVisualizer } from './components/PipelineVisualizer';
 import { VectorSpaceVisualizer } from './components/VectorSpaceVisualizer';
 import { AdmissionsDefense } from './components/AdmissionsDefense';
 import { CodeExporter } from './components/CodeExporter';
-import { assignColorToDocument, DOCUMENT_PALETTE } from './lib/documentColors';
+import { assignColorToDocument } from './lib/documentColors';
 
 export default function App() {
   // Navigation
@@ -108,7 +108,7 @@ export default function App() {
   const handleRechunkAll = useCallback(() => {
     setDocuments((prevDocs) =>
       prevDocs.map((doc, idx) => {
-        const colorTheme = doc.colorTheme || assignColorToDocument(idx);
+        const colorTheme = assignColorToDocument(idx);
         return {
           ...doc,
           colorTheme,
@@ -133,15 +133,7 @@ export default function App() {
     const title = newDoc.title || 'Untitled Document';
     const content = newDoc.content || '';
 
-    // Assign a unique, distinct colour code to each uploaded file
-    const existingHexes = new Set(
-      documents.map((d) => (d.colorTheme?.hex || d.color || '').toLowerCase())
-    );
-    const availableTheme =
-      DOCUMENT_PALETTE.find((p) => !existingHexes.has(p.hex.toLowerCase())) ||
-      assignColorToDocument(documents.length);
-
-    const colorTheme = newDoc.colorTheme || availableTheme;
+    const colorTheme = assignColorToDocument(documents.length);
     const color = colorTheme.hex;
     const colorName = colorTheme.name;
 

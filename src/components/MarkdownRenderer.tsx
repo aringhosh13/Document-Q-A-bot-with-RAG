@@ -58,7 +58,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                   onOpenViewer(targetChunk);
                 }
               }}
-              className="inline-flex items-center mx-1 px-1.5 py-0.5 rounded bg-accent-950/90 hover:bg-accent-900 border border-accent-600/70 hover:border-accent-400 text-accent-300 hover:text-white font-mono text-[11px] font-bold transition-all shadow-xs cursor-pointer align-baseline select-none"
+              className="inline-flex items-center mx-1 px-1.5 py-0.5 rounded bg-accent-950/90 hover:bg-accent-900 border border-accent-600/70 hover:border-accent-400 text-accent-300 hover:text-ink-50 font-mono text-[11px] font-bold transition-all shadow-xs cursor-pointer align-baseline select-none"
               title={`View citation ${part} in document inspector`}
             >
               {part}
@@ -100,7 +100,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         rehypePlugins={[rehypeKatex]}
         components={{
           h1: ({ children }) => (
-            <h1 className="text-base sm:text-lg font-bold text-white mt-5 mb-2.5 pb-1.5 border-b border-ink-800 flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-bold text-ink-50 mt-5 mb-2.5 pb-1.5 border-b border-ink-800 flex items-center gap-2">
               {React.Children.map(children, processCitationsInNode)}
             </h1>
           ),
@@ -142,7 +142,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             </li>
           ),
           strong: ({ children }) => (
-            <strong className="font-semibold text-white">
+            <strong className="font-semibold text-ink-50">
               {React.Children.map(children, processCitationsInNode)}
             </strong>
           ),
@@ -162,7 +162,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             if (isInline) {
               return (
                 <code
-                  className="px-1.5 py-0.5 rounded bg-black border border-ink-800 text-amber-300 font-mono text-[11px]"
+                  className="px-1.5 py-0.5 rounded bg-ink-950 border border-ink-800 text-accent-400 font-mono text-[11px]"
                   {...props}
                 >
                   {children}
@@ -170,20 +170,20 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               );
             }
             return (
-              <pre className="p-3.5 my-3 rounded-xl bg-black border border-ink-800 overflow-x-auto text-xs font-mono text-ink-200 leading-relaxed">
+              <pre className="p-3.5 my-3 rounded-xl bg-ink-950 border border-ink-800 overflow-x-auto text-xs font-mono text-ink-200 leading-relaxed">
                 <code {...props}>{children}</code>
               </pre>
             );
           },
           table: ({ children }) => (
             <div className="overflow-x-auto my-3.5 rounded-lg border border-ink-800">
-              <table className="w-full text-xs text-left border-collapse bg-black">
+              <table className="w-full text-xs text-left border-collapse bg-ink-950">
                 {children}
               </table>
             </div>
           ),
           thead: ({ children }) => (
-            <thead className="bg-ink-900 border-b border-ink-800 text-white font-semibold">
+            <thead className="bg-ink-900 border-b border-ink-800 text-ink-50 font-semibold">
               {children}
             </thead>
           ),

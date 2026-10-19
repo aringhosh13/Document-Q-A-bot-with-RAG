@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { DocumentItem, ChunkingConfig } from '../types';
 import { parseFileToText } from '../lib/documentParser';
-import { getDocumentColor } from '../lib/documentColors';
 import {
   FileText,
   UploadCloud,
@@ -10,7 +9,6 @@ import {
   Eye,
   Sparkles,
   Layers,
-  Palette,
 } from 'lucide-react';
 
 interface DocumentManagerProps {
@@ -107,10 +105,6 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   const totalWords = documents.reduce((acc, d) => acc + d.wordCount, 0);
   const totalChunks = documents.reduce((acc, d) => acc + d.chunks.length, 0);
 
-  const institutionColor = (_inst?: string) => {
-    return 'text-accent-400 border-accent-500/20 bg-accent-950/40';
-  };
-
   return (
     <div className="bg-ink-900 rounded-xl border border-ink-800 p-4 sm:p-5">
       {/* Header & Tabs */}
@@ -149,43 +143,21 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       {activeTab === 'list' && (
         <div className="mt-4 space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
-            {documents.map((doc, idx) => {
-              const color = getDocumentColor(doc, idx);
+            {documents.map((doc) => {
               const isUpload = doc.category === 'user_upload';
 
               return (
                 <div
                   key={doc.id}
-                  className="bg-ink-850 hover:bg-ink-800 border rounded-lg p-3.5 flex flex-col justify-between transition-all group shadow-sm hover:shadow-md"
-                  style={{
-                    borderLeftColor: color.hex,
-                    borderLeftWidth: '3.5px',
-                    borderColor: `${color.hex}25`,
-                  }}
+                  className="bg-ink-900 hover:bg-ink-950 border border-ink-800 rounded-lg p-3.5 flex flex-col justify-between transition-all group shadow-sm hover:shadow-md"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        {/* Colour code badge */}
-                        <span
-                          className="text-[9px] font-mono font-bold tracking-tight px-1.5 py-0.5 rounded border flex items-center gap-1"
-                          style={{
-                            color: color.hex,
-                            backgroundColor: `${color.hex}15`,
-                            borderColor: `${color.hex}35`,
-                          }}
-                        >
-                          <span
-                            className="w-1.5 h-1.5 rounded-full inline-block"
-                            style={{ backgroundColor: color.hex }}
-                          />
-                          {color.name}
-                        </span>
-
                         <span
                           className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded border ${
                             isUpload
-                              ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800/40'
+                              ? 'bg-accent-950 text-accent-400 border-accent-800'
                               : 'bg-ink-800 text-ink-300 border-ink-700'
                           }`}
                         >
@@ -207,7 +179,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                         </button>
                         <button
                           onClick={() => onDeleteDocument(doc.id)}
-                          className="p-1 text-ink-500 hover:text-rose-400 hover:bg-ink-700 rounded transition-colors"
+                          className="p-1 text-ink-500 hover:text-accent-400 hover:bg-ink-700 rounded transition-colors"
                           title="Remove document"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -226,8 +198,6 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-ink-800 text-[10px] text-ink-500 font-mono">
                     <span className="flex items-center gap-1">
                       <strong className="text-ink-300">{doc.chunks.length}</strong> chunks
-                      <span className="text-ink-600">&middot;</span>
-                      <span style={{ color: color.hex }} className="font-semibold">{color.hex}</span>
                     </span>
                     <span>{doc.wordCount.toLocaleString()} words</span>
                     <span>~{doc.pageCount}pg</span>
@@ -289,14 +259,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             </div>
           </div>
 
-          <div className="mt-3 p-3 rounded-lg bg-ink-850/80 border border-ink-800 flex items-center gap-2.5 text-xs text-ink-400">
-            <span className="p-1 rounded bg-accent-500/10 text-accent-400 shrink-0">
-              <Palette className="w-3.5 h-3.5" />
-            </span>
-            <p className="text-[11px] leading-relaxed">
-              <strong className="text-white font-medium">Automatic Colour Coding:</strong> Each file you upload will be assigned a distinct colour code. It will be recorded in the footer registry, visualized on the 256-D vector map, and cited in query responses.
-            </p>
-          </div>
+          <p className="mt-3 text-xs text-ink-400 leading-relaxed">
+            Documents are split into searchable passages. Open a source or citation to inspect its original text.
+          </p>
 
           {uploadStatus && (
             <p className="text-xs text-accent-400 text-center mt-3 animate-pulse">{uploadStatus}</p>
@@ -357,7 +322,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 bg-accent-600 hover:bg-accent-500 text-white font-medium text-xs rounded-lg transition-all flex items-center gap-1.5"
+              className="px-4 py-1.5 bg-accent-900 hover:bg-accent-900 text-ink-50 font-medium text-xs rounded-lg transition-all flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
               Index Document
@@ -376,7 +341,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             </h3>
             <button
               onClick={onRechunkAll}
-              className="px-3 py-1 bg-accent-600 hover:bg-accent-500 text-white rounded-md text-xs font-medium transition-all flex items-center gap-1"
+              className="px-3 py-1 bg-accent-900 hover:bg-accent-900 text-ink-50 rounded-md text-xs font-medium transition-all flex items-center gap-1"
             >
               <Sparkles className="w-3 h-3" />
               Re-index All
@@ -410,7 +375,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             <div>
               <div className="flex justify-between text-xs text-ink-300 mb-1.5">
                 <span>Overlap</span>
-                <span className="font-mono text-amber-400 font-semibold">
+                <span className="font-mono text-accent-400 font-semibold">
                   {chunkingConfig.chunkOverlap} ({((chunkingConfig.chunkOverlap / chunkingConfig.chunkSize) * 100).toFixed(0)}%)
                 </span>
               </div>
