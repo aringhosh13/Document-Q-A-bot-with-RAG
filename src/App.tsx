@@ -7,7 +7,6 @@ import {
   RetrievalConfig,
   RetrievalResult,
 } from './types';
-import { INITIAL_DOCUMENTS } from './data/sampleDocs';
 import {
   splitTextRecursively,
   generateLocalEmbedding,
@@ -79,29 +78,6 @@ export default function App() {
         setIsGeminiConnected(false);
         setServiceStatus('offline');
       });
-  }, []);
-
-  // Initialize and index sample documents on first load
-  useEffect(() => {
-    const initialized = INITIAL_DOCUMENTS.map((doc, idx) => {
-      const colorTheme = assignColorToDocument(idx);
-      const chunks = splitTextRecursively(
-        doc.content,
-        doc.id,
-        doc.title,
-        chunkingConfig,
-        colorTheme.hex,
-        colorTheme.name
-      );
-      return {
-        ...doc,
-        colorTheme,
-        color: colorTheme.hex,
-        colorName: colorTheme.name,
-        chunks,
-      };
-    });
-    setDocuments(initialized);
   }, []);
 
   // Re-chunk all documents when chunking configuration changes
@@ -186,7 +162,7 @@ export default function App() {
 
   // Execute RAG Query
   const handleSendMessage = async (queryText: string) => {
-    if (!queryText.trim() || isLoading) return;
+    if (!queryText.trim() || isLoading || documents.length === 0) return;
 
     const userMessageId = `msg-${Date.now()}-user`;
     const botMessageId = `msg-${Date.now()}-bot`;

@@ -15,9 +15,9 @@ interface ChatInterfaceProps {
 }
 
 const suggestions = [
-  { topic: 'Attention Is All You Need', question: 'How does multi-head attention work in a Transformer?' },
-  { topic: 'Retrieval-Augmented Generation', question: 'What is the difference between RAG-Sequence and RAG-Token?' },
-  { topic: 'Dense Vector Embeddings', question: 'How does cosine similarity help find relevant document passages?' },
+  { topic: 'Overview', question: 'Summarize the main ideas in my sources.' },
+  { topic: 'Findings', question: 'What are the key findings and conclusions in these documents?' },
+  { topic: 'Evidence', question: 'Which passages support the main claims in my sources?' },
 ];
 
 export function ChatInterface({ messages, onSendMessage, isLoading, retrievalConfig, setRetrievalConfig, onOpenViewerWithChunk, onClearChat, documents }: ChatInterfaceProps) {
@@ -71,8 +71,8 @@ export function ChatInterface({ messages, onSendMessage, isLoading, retrievalCon
         <span className="notebook-label"><MessageSquare size={17} strokeWidth={1.5} /> YOUR NOTEBOOK</span>
         <h2>Ask your sources.</h2>
         <p>{documents.length ? 'Explore an idea, compare findings, or ask a specific question. Answers draw on the documents in this notebook.' : 'Add a document to the notebook, then ask a question about it.'}</p>
-        <div className="suggested-questions"><h3>Try a question</h3>{suggestions.map(suggestion => <button key={suggestion.topic} disabled={!documents.length || isLoading} onClick={() => onSendMessage(suggestion.question)}><span><small>{suggestion.topic}</small><strong>{suggestion.question}</strong></span><ArrowUpRight size={16} /></button>)}</div>
-        <p className="empty-help">Select a source on the left to read it alongside your conversation.</p>
+        {documents.length > 0 && <div className="suggested-questions"><h3>Try a question</h3>{suggestions.map(suggestion => <button key={suggestion.topic} disabled={!documents.length || isLoading} onClick={() => onSendMessage(suggestion.question)}><span><small>{suggestion.topic}</small><strong>{suggestion.question}</strong></span><ArrowUpRight size={16} /></button>)}</div>}
+        <p className="empty-help">{documents.length ? 'Select a source on the left to read it alongside your conversation.' : 'Use Add documents to upload a file or paste your own text in Sources.'}</p>
       </div> : messages.map(message => <article key={message.id} className={'conversation-message ' + (message.role === 'user' ? 'user-message' : 'assistant-message')}>
         {message.role === 'user' ? <><div className="message-byline"><strong>You</strong><span>{message.timestamp}</span></div><p>{message.content}</p></> : <>
           <div className="message-byline"><strong>Grounded</strong><span>{message.modelUsed === 'deterministic-rag-synthesizer' ? 'Local synthesis' : message.modelUsed && message.modelUsed !== 'unknown' ? message.modelUsed : 'Response'}</span>{message.latencyMs !== undefined && <span className="message-latency"><Clock3 size={12} />{message.latencyMs < 1000 ? message.latencyMs + ' ms' : (message.latencyMs / 1000).toFixed(1) + ' s'}</span>}</div>
